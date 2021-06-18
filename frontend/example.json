@@ -24,6 +24,7 @@
 // new token
 {"action": "new_jwt",
 	"data": {
-		"rjwt": ""
+		"rjwt": "",
+		"jwt": ""
 	}
 }
