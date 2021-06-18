@@ -1,0 +1,29 @@
+// request
+{
+	"action": "add_category/delete_category/add_item/delete_item",
+	"jwt_token": "aaa.bbb.ccc",
+	"data": {
+		"category_name": "some",
+		"item_name": "some"
+	}
+}
+
+// response
+{"success": true,
+	"data": {
+		"error": "error"
+	}
+}
+
+// new rewoke token
+{"action": "new_rjwt",
+	"data": {
+		"rjwt": ""
+	}
+}
+// new token
+{"action": "new_jwt",
+	"data": {
+		"rjwt": ""
+	}
+}
