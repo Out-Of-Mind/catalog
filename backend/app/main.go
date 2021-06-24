@@ -1,20 +1,28 @@
 package main
 
 import (
+	vars "github.com/out-of-mind/catalog/variables"
+	"github.com/out-of-mind/catalog/middlewares"
 	"github.com/out-of-mind/catalog/routes"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	
+	"database/sql"
+    _ "github.com/lib/pq"
 	"os/signal"
 	"net/http"
 	"context"
-	//"flag"
 	"time"
 	"log"
 	"fmt"
 	"os"
 )
 
-func main() {
+func main() {	
+	initDB()
+	defer vars.DB.Close()
+	initCache()
+
 	wait := time.Second * 10;
 
 	r := mux.NewRouter()
@@ -23,6 +31,7 @@ func main() {
 	r.HandleFunc("/login", routes.LoginHandler)
 	r.HandleFunc("/api", routes.APIHandler)/*.
 	Methods("POST")*/
+	r.Use(middlewares.LoggingMiddleware)
 
 	srv := &http.Server{
 		Handler:      r,
@@ -51,4 +60,22 @@ func main() {
 	srv.Shutdown(ctx)
 	log.Println("shutting down")
 	os.Exit(0)
+}
+
+func initCache() {
+	vars.Cache = redis.NewClient(&redis.Options{
+        Addr:     "localhost:6379",
+        Password: "",
+        DB:       0,
+    })
+}
+
+func initDB() {
+	var err error
+	connStr := "user=catalog_user password=password dbname=catalog_db sslmode=disable"
+    vars.DB, err = sql.Open("postgres", connStr)
+    if err != nil {
+        log.Println(err)
+        os.Exit(1)
+    }
 }

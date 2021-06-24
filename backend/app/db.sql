@@ -22,6 +22,7 @@ CREATE TABLE users(
    user_name VARCHAR(255) NOT NULL,
    group_id INT,
    PRIMARY KEY(user_id),
+   UNIQUE(user_name),
    CONSTRAINT fk_group
       FOREIGN KEY(group_id) 
 	  REFERENCES groups(group_id)
@@ -52,5 +53,25 @@ CREATE TABLE items(
 	  REFERENCES categories(category_id)
 	  ON DELETE CASCADE
 );
+insert into groups(group_name) values('test_group');
+insert into users(user_name, group_id) values('test_user', 1);
+insert into categories(category_name, group_id) values('test_category', 1);
+insert into items(item_name, category_id) values('test_item', 1);
+insert into items(item_name, category_id) values('test_item', 1);
+insert into items(item_name, category_id) values('test_item', 1);
+
+insert into groups(group_name) values('test_group2');
+insert into users(user_name, group_id) values('test_user2', 2);
+insert into categories(category_name, group_id) values('test_category2', 2);
+insert into items(item_name, category_id) values('test_item', 2);
+insert into items(item_name, category_id) values('test_item', 2);
+insert into items(item_name, category_id) values('test_item', 2);
+insert into items(item_name, category_id) values('test_item', 2);
+
+insert into categories(category_name, group_id) values('test_category3', 2);
+insert into items(item_name, category_id) values('test', 4);
+insert into items(item_name, category_id) values('test', 4);
+insert into items(item_name, category_id) values('test', 4);
+insert into items(item_name, category_id) values('test', 4);
 
 SELECT category_name, item_name FROM categories, items, users WHERE users.user_id=1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id;

@@ -23,3 +23,12 @@ type ResponseJSON struct {
 	Succes bool `json:"success"`
 	Data ResponseDataJSON`json:"data"`
 }
+
+type IndexItems struct {
+	Items []IndexData
+}
+
+type IndexData struct {
+	CategoryName string
+	ItemNames []string
+}
