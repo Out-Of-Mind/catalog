@@ -28,7 +28,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := vars.DB.Query("SELECT categories.category_name, categories.category_id FROM categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id ORDER BY categories.category_id ASC", userId)
+	rows, err := vars.DB.Query("SELECT categories.category_name, categories.category_id FROM categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id", userId)
     if err != nil {
         log.Println(err)
     }
@@ -48,7 +48,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
         categoriesMap[categoryId] = categoryName
     }
 
-    rows, err = vars.DB.Query("SELECT items.item_name, items.category_id FROM items, categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id ORDER BY items.category_id ASC", userId)
+    rows, err = vars.DB.Query("SELECT items.item_name, items.category_id FROM items, categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id", userId)
 	if err != nil {
         log.Println(err)
     }
