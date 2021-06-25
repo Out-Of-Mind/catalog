@@ -4,19 +4,21 @@ import (
 	vars "github.com/out-of-mind/catalog/variables"
 	"github.com/out-of-mind/catalog/structures"
 
-	"html/template"
 	"encoding/json"
+	"html/template"
 	"io/ioutil"
 	"net/http"
+	"strings"
+	"sort"
 	"log"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("session_token")
     sessionToken := c.Value
-	user_id, _ := vars.Cache.Get(vars.CTX, sessionToken).Result()
+	userId, _ := vars.Cache.Get(vars.CTX, sessionToken).Result()
 
-	log.Println(sessionToken, user_id)
+	log.Println(sessionToken, userId)
 	
 	tmpl, err := template.ParseFiles(vars.TemplateDir+"index.html")
 	if err != nil {
@@ -26,37 +28,61 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := vars.DB.Query("SELECT category_name, item_name FROM categories, items, users WHERE users.user_id=$1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id", user_id)
+	rows, err := vars.DB.Query("SELECT categories.category_name, categories.category_id FROM categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id ORDER BY categories.category_id ASC", userId)
     if err != nil {
         log.Println(err)
     }
     defer rows.Close()
 
-    var indexItems structures.IndexItems
-
-    data := make(map[string][]string)
+    categoriesMap := make(map[int64]string)
 
     for rows.Next() {
     	var (
-        	categoryName, itemName string
+        	categoryName string
+        	categoryId int64
     	)
-        err = rows.Scan(&categoryName, &itemName)
+        err = rows.Scan(&categoryName, &categoryId)
         if err != nil {
             log.Println(err)
         }
-        data[categoryName] = append(data[categoryName], itemName)
+        categoriesMap[categoryId] = categoryName
     }
 
-    for categoryName := range data {
-    	var indexData structures.IndexData
-    	indexData.CategoryName = categoryName
+    rows, err = vars.DB.Query("SELECT items.item_name, items.category_id FROM items, categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id ORDER BY items.category_id ASC", userId)
+	if err != nil {
+        log.Println(err)
+    }
+    defer rows.Close()
 
-    	for _, itemName := range data[categoryName] {
+    itemsMap := make(map[int64][]string)
+
+    for rows.Next() {
+    	var (
+        	itemName string
+        	categoryId int64
+    	)
+        err = rows.Scan(&itemName, &categoryId)
+        if err != nil {
+            log.Println(err)
+        }
+        itemsMap[categoryId] = append(itemsMap[categoryId], itemName)
+    }
+
+    var indexItems structures.IndexItems
+
+    for id := range categoriesMap {
+    	var indexData structures.IndexData
+
+    	indexData.ID = id
+    	indexData.CategoryName = categoriesMap[id]
+    	indexData.CategoryID = strings.ReplaceAll(strings.ToLower(categoriesMap[id]), " ", "_")
+    	for _, itemName := range itemsMap[id] {
     		indexData.ItemNames = append(indexData.ItemNames, itemName)
     	}
-
     	indexItems.Items = append(indexItems.Items, indexData)
     }
+
+    sort.Sort(structures.ByID(indexItems.Items))
 	
 	w.Header().
 	Set("Content-Type", "text/html")

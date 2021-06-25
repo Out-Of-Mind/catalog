@@ -75,3 +75,10 @@ insert into items(item_name, category_id) values('test', 4);
 insert into items(item_name, category_id) values('test', 4);
 
 SELECT category_name, item_name FROM categories, items, users WHERE users.user_id=1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id;
+
+
+SELECT categories.category_name, categories.category_id FROM categories, users
+WHERE users.user_id=2 AND categories.group_id=users.group_id;
+
+SELECT items.item_name, items.category_id FROM items, categories, users
+WHERE users.user_id=2 AND categories.group_id=users.group_id AND items.category_id=categories.category_id;

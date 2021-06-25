@@ -29,6 +29,14 @@ type IndexItems struct {
 }
 
 type IndexData struct {
+	ID int64
 	CategoryName string
+	CategoryID string
 	ItemNames []string
 }
+
+type ByID []IndexData
+
+func (a ByID) Len() int { return len(a) }
+func (a ByID) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByID) Less(i, j int) bool { return a[i].ID > a[j].ID }
