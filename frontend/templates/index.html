@@ -22,33 +22,19 @@
 	</header>
 
 	<main class="main">
-		<div id="вещи" class="main__group">
-			<div class="main__group-title">Вещи</div>
+		{{ range $item := .Items}}
+		<div id="{{ $item.CategoryID }}" class="main__group">
+			<div class="main__group-title">{{ $item.CategoryName }}</div>
+			{{ range $itemName := $item.ItemNames }}
 			<div class="main__group-item">
-				<p class="main__group-item--text">1.Что-то в шкафу</p>
+				<p class="main__group-item--text">{{ $itemName }}</p>
 				<button class="main__group-item--btn">
 					<img class="main__group-item--img" src="static/index/img/close.svg" alt="close" width="20px" height="20px">
 				</button>
 			</div>
-			<div class="main__group-item">
-				<p class="main__group-item--text">2.Что-то в шкафу</p>
-				<button class="main__group-item--btn">
-					<img class="main__group-item--img" src="static/index/img/close.svg" alt="close" width="20px" height="20px">
-				</button>
-			</div>
-			<div class="main__group-item">
-				<p class="main__group-item--text">3.Что-то в шкафу</p>
-				<button class="main__group-item--btn">
-					<img class="main__group-item--img" src="static/index/img/close.svg" alt="close" width="20px" height="20px">
-				</button>
-			</div>
-			<div class="main__group-item">
-				<p class="main__group-item--text">4.Что-то в шкафу</p>
-				<button class="main__group-item--btn">
-					<img class="main__group-item--img" src="static/index/img/close.svg" alt="close" width="20px" height="20px">
-				</button>
-			</div>
+			{{ end }}
 		</div>
+		{{ end }}
 	</main>
 
 	<div class="search">

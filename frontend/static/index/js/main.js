@@ -115,7 +115,7 @@ add_window_add_btn.addEventListener("click", ()=>{
 		// finding category
 		let category_name = add_window_input_category.value;
 		let description = (add_window_input_description.value).escape();
-		let group = document.getElementById((category_name).escape().toLowerCase().replace(" ", "_"));
+		let group = document.getElementById((category_name).escape().toLowerCase().replaceAll(" ", "_"));
 
 		// chech if group with "category_name" was found
 		if (!group) {
@@ -214,7 +214,7 @@ menu_window_add_category.addEventListener("click", ()=>{
 
 	// finding category
 	let category_name = (menu_window_add_input_category.value).escape();
-	let category_id = (category_name.toLowerCase().replace(" ", "_"));
+	let category_id = (category_name.toLowerCase().replaceAll(" ", "_"));
 	let category = document.getElementById(category_id);
 
 	if (category_name == "") {
@@ -232,7 +232,7 @@ menu_window_add_category.addEventListener("click", ()=>{
 		let category = document.createElement("div");
 		let category_title = document.createElement("p");
 
-		let category_id = category_name.toLowerCase().replace(" ", "_");
+		let category_id = category_name.toLowerCase().replaceAll(" ", "_");
 
 		category.classList.add("main__group");
 		category_title.classList.add("main__group-title");
@@ -259,7 +259,8 @@ menu_window_delete_category.addEventListener("click", ()=>{
 	}
 
 	// finding category
-	let category_id = (category_name.toLowerCase().replace(" ", "_")).escape();
+	let category_id = (category_name.toLowerCase().replaceAll(" ", "_")).escape();
+	console.log(category_id)
 	let category = document.getElementById(category_id);
 	
 	if (category == null) {
@@ -513,7 +514,7 @@ function search(str) {
 		output.forEach(element=>{
 			// enumarte output array
 			let category_name = element;
-			let group = document.getElementById((element).escape().toLowerCase().replace(" ", "_")).cloneNode(true);
+			let group = document.getElementById((element).escape().toLowerCase().replaceAll(" ", "_")).cloneNode(true);
 			
 			// copy elements from main to search output
 			search_output.appendChild(group);
