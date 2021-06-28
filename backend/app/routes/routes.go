@@ -3,12 +3,14 @@ package routes
 import (
 	vars "github.com/out-of-mind/catalog/variables"
 	"github.com/out-of-mind/catalog/structures"
+	"github.com/satori/uuid"
 
 	"encoding/json"
 	"html/template"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 	"sort"
 	"log"
 )
@@ -16,9 +18,29 @@ import (
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("session_token")
     sessionToken := c.Value
-	userId, _ := vars.Cache.Get(vars.CTX, sessionToken).Result()
+    expiresAt := c.Expires
 
-	log.Println(sessionToken, userId)
+    if time.Now().Sub(expiresAt).Hours() <= 168 {
+    	vars.Cache.Del(vars.CTX, sessionToken)
+    	log.Println("setting new cookie")
+
+    	sessionToken := uuid.NewV4().String()
+
+		_, err = vars.Cache.Set(vars.CTX, sessionToken, "k", 720 * time.Hour).Result()
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:    "session_token",
+			Value:   sessionToken,
+			Expires: time.Now().Add(720 * time.Hour),
+		})
+    }
+
+	userId, _ := vars.Cache.Get(vars.CTX, sessionToken).Result()
+	log.Println(userId)
 	
 	tmpl, err := template.ParseFiles(vars.TemplateDir+"index.html")
 	if err != nil {
