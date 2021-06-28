@@ -16,31 +16,31 @@ import (
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("session_token")
+	c, _ := r.Cookie("session_token")
     sessionToken := c.Value
-    expiresAt := c.Expires
 
-    if time.Now().Sub(expiresAt).Hours() <= 168 {
-    	vars.Cache.Del(vars.CTX, sessionToken)
-    	log.Println("setting new cookie")
+    vars.Cache.Del(vars.CTX, sessionToken)
+    log.Println("setting new cookie")
 
-    	sessionToken := uuid.NewV4().String()
+    sessionToken = uuid.NewV4().String()
 
-		_, err = vars.Cache.Set(vars.CTX, sessionToken, "k", 720 * time.Hour).Result()
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		http.SetCookie(w, &http.Cookie{
-			Name:    "session_token",
-			Value:   sessionToken,
-			Expires: time.Now().Add(720 * time.Hour),
-		})
-    }
+	_, err := vars.Cache.Set(vars.CTX, sessionToken, "k", 720 * time.Hour).Result()
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:    "session_token",
+		Value:   sessionToken,
+		Domain: ".catalog.cc",
+		Expires: time.Now().Add(720 * time.Hour),
+		HttpOnly: true,
+		SameSite: 2,
+	})
 
 	userId, _ := vars.Cache.Get(vars.CTX, sessionToken).Result()
-	log.Println(userId)
+	log.Println("user_id: ", userId)
 	
 	tmpl, err := template.ParseFiles(vars.TemplateDir+"index.html")
 	if err != nil {
@@ -112,11 +112,34 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
     tmpl.Execute(w, indexItems)
 }
 
+func DashboardHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().
+	Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("/dashboard"))
+}
+
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().
 	Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("/login"))
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	c, _ := r.Cookie("session_token")
+    sessionToken := c.Value
+
+    vars.Cache.Del(vars.CTX, sessionToken)
+
+	http.Redirect(w, r, "login", http.StatusTemporaryRedirect)
+}
+
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().
+	Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("/register"))
 }
 
 func APIHandler(w http.ResponseWriter, r *http.Request) {
