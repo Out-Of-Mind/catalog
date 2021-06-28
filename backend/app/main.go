@@ -28,7 +28,10 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", routes.HomeHandler)
+	r.HandleFunc("/dashboard", routes.DashboardHandler)
 	r.HandleFunc("/login", routes.LoginHandler)
+	r.HandleFunc("/register", routes.RegisterHandler)
+	r.HandleFunc("/logout", routes.LogoutHandler)
 	r.HandleFunc("/api", routes.APIHandler)/*.
 	Methods("POST")*/
 	r.Use(middlewares.LoggingMiddleware)

@@ -120,15 +120,14 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().
-	Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("/login"))
+	http.Redirect(w, r, "dashboard", http.StatusTemporaryRedirect)
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("session_token")
     sessionToken := c.Value
+
+    log.Println("deleting cookie")
 
     vars.Cache.Del(vars.CTX, sessionToken)
 
