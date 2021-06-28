@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"strconv"
 	"time"
 	"sort"
 	"log"
@@ -19,12 +20,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("session_token")
     sessionToken := c.Value
 
+	userId, _ := vars.Cache.Get(vars.CTX, sessionToken).Result()
+	log.Println("user_id: ", userId)
+
     vars.Cache.Del(vars.CTX, sessionToken)
     log.Println("setting new cookie")
 
     sessionToken = uuid.NewV4().String()
 
-	_, err := vars.Cache.Set(vars.CTX, sessionToken, "k", 720 * time.Hour).Result()
+	_, err := vars.Cache.Set(vars.CTX, sessionToken, userId, 720 * time.Hour).Result()
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -38,9 +42,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		SameSite: 2,
 	})
-
-	userId, _ := vars.Cache.Get(vars.CTX, sessionToken).Result()
-	log.Println("user_id: ", userId)
 	
 	tmpl, err := template.ParseFiles(vars.TemplateDir+"index.html")
 	if err != nil {
@@ -50,7 +51,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := vars.DB.Query("SELECT categories.category_name, categories.category_id FROM categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id", userId)
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 Internal Server Error"))
+		return
+	}
+
+	rows, err := vars.DB.Query("SELECT categories.category_name, categories.category_id FROM categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id", userIdInt)
     if err != nil {
         log.Println(err)
     }
@@ -70,7 +79,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
         categoriesMap[categoryId] = categoryName
     }
 
-    rows, err = vars.DB.Query("SELECT items.item_name, items.category_id FROM items, categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id", userId)
+    rows, err = vars.DB.Query("SELECT items.item_name, items.category_id FROM items, categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id", userIdInt)
 	if err != nil {
         log.Println(err)
     }

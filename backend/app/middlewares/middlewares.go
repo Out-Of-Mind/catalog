@@ -13,7 +13,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
         log.Println(r.RequestURI)
 
-        if r.RequestURI == "/login" {
+        if r.RequestURI != "/login" {
             log.Println("login Handler")
             next.ServeHTTP(w, r)
         } else {
