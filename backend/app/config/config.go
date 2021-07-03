@@ -5,20 +5,20 @@ import (
 
 	"encoding/json"
 	"io/ioutil"
-	"strings"
 	"os"
+	"strings"
 )
 
 type Config struct {
-	DB_NAME string `json:"DB_NAME"`
-	DB_USER string `json:"DB_USER"`
+	DB_NAME     string `json:"DB_NAME"`
+	DB_USER     string `json:"DB_USER"`
 	DB_PASSOWRD string `json:"DB_PASSOWRD"`
-	DB_SSLMODE string `json:"DB_SSLMODE"`
+	DB_SSLMODE  string `json:"DB_SSLMODE"`
 
-	REDIS_IP string `json:"REDIS_IP"`
-	REDIS_PORT string `json:"REDIS_PORT"`
+	REDIS_IP       string `json:"REDIS_IP"`
+	REDIS_PORT     string `json:"REDIS_PORT"`
 	REDIS_PASSWORD string `json:"REDIS_PASSWORD"`
-	REDIS_DB int `json:"REDIS_DB"`
+	REDIS_DB       int    `json:"REDIS_DB"`
 
 	TEMPLATES_DIR string `json:"TEMPLATES_DIR"`
 
@@ -27,15 +27,15 @@ type Config struct {
 
 func ParseConfig(path string) Config {
 	data, err := ioutil.ReadFile(path)
-    if err != nil {
-    	vars.Log.Fatal("Falied read config file, error: ", err)
-    }
+	if err != nil {
+		vars.Log.Fatal("Falied read config file, error: ", err)
+	}
 
-    var config Config
+	var config Config
 
-    json.Unmarshal(data, &config)
+	json.Unmarshal(data, &config)
 
-    if config.DB_NAME == "" {
+	if config.DB_NAME == "" {
 		vars.Log.Fatal("DB_NAME cannot be empty")
 	}
 	if config.DB_USER == "" {
@@ -63,7 +63,7 @@ func ParseConfig(path string) Config {
 		vars.Log.Fatal("TEMPLATES_DIR cannot be empty")
 	} else {
 		_, err = ioutil.ReadDir(config.TEMPLATES_DIR)
-		if err != nil {	
+		if err != nil {
 			vars.Log.Fatal("Cannot read TEMPLATES_DIR: ", config.TEMPLATES_DIR)
 		}
 	}
