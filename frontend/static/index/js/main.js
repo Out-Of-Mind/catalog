@@ -114,9 +114,8 @@ add_window_add_btn.addEventListener("click", ()=>{
 	} else {
 		// finding category
 		let category_name = add_window_input_category.value;
-		let description = (add_window_input_description.value).escape();
+		let description = (add_window_input_description.value).replaceAll(/[\r\n\t]/g, "").escape();
 		let group = document.getElementById((category_name).escape().replaceAll(" ", "_"));
-		console.log(category_name, group)
 
 		// chech if group with "category_name" was found
 		if (!group) {
