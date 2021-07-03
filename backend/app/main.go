@@ -1,25 +1,25 @@
 package main
 
 import (
-	vars "github.com/out-of-mind/catalog/variables"
-	"github.com/t-tomalak/logrus-easy-formatter"
-	"github.com/out-of-mind/catalog/middlewares"
-	"github.com/out-of-mind/catalog/config"
-	"github.com/out-of-mind/catalog/routes"
 	"github.com/go-redis/redis/v8"
+	"github.com/out-of-mind/catalog/config"
+	"github.com/out-of-mind/catalog/middlewares"
+	"github.com/out-of-mind/catalog/routes"
+	vars "github.com/out-of-mind/catalog/variables"
 	"github.com/sirupsen/logrus"
-	
+	"github.com/t-tomalak/logrus-easy-formatter"
+
 	"github.com/gorilla/mux"
-	
-	"database/sql"
-    _ "github.com/lib/pq"
-	"os/signal"
-	"net/http"
+
 	"context"
+	"database/sql"
 	"flag"
-	"time"
 	"fmt"
+	_ "github.com/lib/pq"
+	"net/http"
 	"os"
+	"os/signal"
+	"time"
 )
 
 var log *logrus.Logger
@@ -37,7 +37,7 @@ func main() {
 	defer vars.DB.Close()
 	initCache()
 
-	wait := time.Second * 10;
+	wait := time.Second * 10
 
 	r := mux.NewRouter()
 
@@ -47,23 +47,23 @@ func main() {
 	r.HandleFunc("/register", routes.RegisterHandler)
 	r.HandleFunc("/logout", routes.LogoutHandler)
 	r.HandleFunc("/api", routes.APIHandler).
-	Methods("POST")
-	
+		Methods("POST")
+
 	r.Use(middlewares.CSRFMiddleware)
 	r.Use(middlewares.LoggingMiddleware)
 
 	srv := &http.Server{
-		Handler:      r,
-		Addr:         "localhost:8080",
-		ReadTimeout: 15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout: 20 * time.Second,
+		Handler:           r,
+		Addr:              "localhost:8080",
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       20 * time.Second,
 		ReadHeaderTimeout: 20 * time.Second,
 	}
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			log.Error(err)
+			fmt.Println(err)
 		}
 	}()
 
@@ -78,39 +78,38 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), wait)
 	defer cancel()
 	srv.Shutdown(ctx)
-	log.Println("shutting down")
 	fmt.Println("shutting down")
 	os.Exit(0)
 }
 
 func initCache() {
 	vars.Cache = redis.NewClient(&redis.Options{
-        Addr:     c.REDIS_IP+":"+c.REDIS_PORT,
-        Password: c.REDIS_PASSWORD,
-        DB:       c.REDIS_DB,
-    })
+		Addr:     c.REDIS_IP + ":" + c.REDIS_PORT,
+		Password: c.REDIS_PASSWORD,
+		DB:       c.REDIS_DB,
+	})
 
-    _, err := vars.Cache.Do(vars.CTX, "keys", "*").Result()
-    if err != nil {
-    	fmt.Println("Cannot access redis, exit with error: ", err)
-    	vars.Log.Fatal("Cannot access redis, exit with error: ", err)
-    }
+	_, err := vars.Cache.Do(vars.CTX, "keys", "*").Result()
+	if err != nil {
+		fmt.Println("Cannot access redis, exit with error: ", err)
+		vars.Log.Fatal("Cannot access redis, exit with error: ", err)
+	}
 }
 
 func initDB() {
 	var err error
 	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", c.DB_USER, c.DB_PASSOWRD, c.DB_NAME, c.DB_SSLMODE)
-    vars.DB, err = sql.Open("postgres", connStr)
-    if err != nil {
-    	fmt.Println("Cannot access postgresql db, exit with error: ", err)
-        vars.Log.Fatal("Cannot access postgresql db, exit with error: ", err)
-    }
+	vars.DB, err = sql.Open("postgres", connStr)
+	if err != nil {
+		fmt.Println("Cannot access postgresql db, exit with error: ", err)
+		vars.Log.Fatal("Cannot access postgresql db, exit with error: ", err)
+	}
 
-    _, err = vars.DB.Exec("SELECT * FROM groups")
-    if err != nil {
-    	fmt.Println("Cannot access postgresql db, exit with error: ", err)
-    	vars.Log.Fatal("Cannot access postgresql db, exit with error: ", err)
-    }
+	_, err = vars.DB.Exec("SELECT * FROM groups")
+	if err != nil {
+		fmt.Println("Cannot access postgresql db, exit with error: ", err)
+		vars.Log.Fatal("Cannot access postgresql db, exit with error: ", err)
+	}
 }
 
 func initLogger(path, logLevel string) *logrus.Logger {
@@ -125,11 +124,11 @@ func initLogger(path, logLevel string) *logrus.Logger {
 		vars.Log.Fatal(err)
 	}
 	logger := &logrus.Logger{
-		Out: logFile,
+		Out:   logFile,
 		Level: lvl,
 		Formatter: &easy.Formatter{
-		TimestampFormat: "2006-01-02 15:04:05",
-		LogFormat: "[%lvl%]: %time% - %msg%\n",
+			TimestampFormat: "2006-01-02 15:04:05",
+			LogFormat:       "[%lvl%]: %time% - %msg%\n",
 		},
 	}
 
