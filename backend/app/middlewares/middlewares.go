@@ -3,28 +3,30 @@ package middlewares
 import (
     vars "github.com/out-of-mind/catalog/variables"
     "github.com/go-redis/redis/v8"
+    "github.com/gorilla/csrf"
 
     "net/http"
-    "log"
 )
 
 func LoggingMiddleware(next http.Handler) http.Handler {
+    vars.Log.Debug("Logging middleware")
+
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-        log.Println(r.RequestURI)
+        vars.Log.Println(r.RequestURI)
 
-        if r.RequestURI != "/login" {
-            log.Println("login Handler")
+        if r.RequestURI == "/login" || r.RequestURI == "/register" || r.RequestURI == "/api" { // test only (!=) in prod set to (==)
+            vars.Log.Debug("Next handler without cookies set")
             next.ServeHTTP(w, r)
         } else {
             c, err := r.Cookie("session_token")
             if err != nil {
                 if err == http.ErrNoCookie {
-                    log.Println("no cookie, redirect")
+                    vars.Log.Debug("no cookie, redirect")
                     http.Redirect(w, r, "login", http.StatusTemporaryRedirect)
                     return
                 }
-                log.Println("bad request")
+                vars.Log.Debug("bad request")
                 w.WriteHeader(http.StatusBadRequest)
                 return
             }
@@ -32,15 +34,29 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
             _, err = vars.Cache.Get(vars.CTX, sessionToken).Result()
             if err == redis.Nil {
-                log.Println("no cookie in redis, redirect")
+                vars.Log.Debug("no cookie in redis, redirect")
                 http.Redirect(w, r, "login", http.StatusTemporaryRedirect)
                 return
             } else if err != nil {
-                log.Println(err)
+                vars.Log.Debug(err)
             } else {
-                log.Println("cookie found, next")
+                vars.Log.Debug("cookie found, next")
                 next.ServeHTTP(w, r)
             }
+        }
+    })
+}
+
+func CSRFMiddleware(next http.Handler) http.Handler {
+    vars.Log.Debug("CSRF middleware")
+
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        if r.RequestURI == "/login" || r.RequestURI == "/register" {
+            CSRF := csrf.Protect(vars.Secret, csrf.Secure(false))
+            // csrf.Secure(false) only for debug
+            CSRF(next).ServeHTTP(w, r)
+        } else {
+            next.ServeHTTP(w, r)
         }
     })
 }

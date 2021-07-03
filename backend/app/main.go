@@ -2,9 +2,13 @@ package main
 
 import (
 	vars "github.com/out-of-mind/catalog/variables"
+	"github.com/t-tomalak/logrus-easy-formatter"
 	"github.com/out-of-mind/catalog/middlewares"
+	"github.com/out-of-mind/catalog/config"
 	"github.com/out-of-mind/catalog/routes"
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
+	
 	"github.com/gorilla/mux"
 	
 	"database/sql"
@@ -12,13 +16,23 @@ import (
 	"os/signal"
 	"net/http"
 	"context"
+	"flag"
 	"time"
-	"log"
 	"fmt"
 	"os"
 )
 
-func main() {	
+var log *logrus.Logger
+var c config.Config
+var configFile string
+
+func main() {
+	flag.StringVar(&configFile, "-c", "/catalog/backend/app/config.json", "usage: -c ./config.json to set ./config.json as config file")
+	flag.Parse()
+
+	vars.Log = initLogger("catalog.log", "INFO")
+
+	c = config.ParseConfig(configFile)
 	initDB()
 	defer vars.DB.Close()
 	initCache()
@@ -32,13 +46,15 @@ func main() {
 	r.HandleFunc("/login", routes.LoginHandler)
 	r.HandleFunc("/register", routes.RegisterHandler)
 	r.HandleFunc("/logout", routes.LogoutHandler)
-	r.HandleFunc("/api", routes.APIHandler)/*.
-	Methods("POST")*/
+	r.HandleFunc("/api", routes.APIHandler).
+	Methods("POST")
+	
+	r.Use(middlewares.CSRFMiddleware)
 	r.Use(middlewares.LoggingMiddleware)
 
 	srv := &http.Server{
 		Handler:      r,
-		Addr:         "127.0.0.1:8080",
+		Addr:         "localhost:8080",
 		ReadTimeout: 15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout: 20 * time.Second,
@@ -47,11 +63,12 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			log.Println(err)
+			log.Error(err)
 		}
 	}()
 
-	log.Println(fmt.Sprintf("Server started at %s", "127.0.0.1:8080"))
+	fmt.Printf("Server started at %s", "localhost:8080\n")
+	vars.Log.Println(fmt.Sprintf("Server started at %s", "localhost:8080"))
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -62,23 +79,59 @@ func main() {
 	defer cancel()
 	srv.Shutdown(ctx)
 	log.Println("shutting down")
+	fmt.Println("shutting down")
 	os.Exit(0)
 }
 
 func initCache() {
 	vars.Cache = redis.NewClient(&redis.Options{
-        Addr:     "localhost:6379",
-        Password: "",
-        DB:       0,
+        Addr:     c.REDIS_IP+":"+c.REDIS_PORT,
+        Password: c.REDIS_PASSWORD,
+        DB:       c.REDIS_DB,
     })
+
+    _, err := vars.Cache.Do(vars.CTX, "keys", "*").Result()
+    if err != nil {
+    	fmt.Println("Cannot access redis, exit with error: ", err)
+    	vars.Log.Fatal("Cannot access redis, exit with error: ", err)
+    }
 }
 
 func initDB() {
 	var err error
-	connStr := "user=catalog_user password=password dbname=catalog_db sslmode=disable"
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", c.DB_USER, c.DB_PASSOWRD, c.DB_NAME, c.DB_SSLMODE)
     vars.DB, err = sql.Open("postgres", connStr)
     if err != nil {
-        log.Println(err)
-        os.Exit(1)
+    	fmt.Println("Cannot access postgresql db, exit with error: ", err)
+        vars.Log.Fatal("Cannot access postgresql db, exit with error: ", err)
     }
+
+    _, err = vars.DB.Exec("SELECT * FROM groups")
+    if err != nil {
+    	fmt.Println("Cannot access postgresql db, exit with error: ", err)
+    	vars.Log.Fatal("Cannot access postgresql db, exit with error: ", err)
+    }
+}
+
+func initLogger(path, logLevel string) *logrus.Logger {
+	logFile, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println(err)
+		vars.Log.Fatal(err)
+	}
+	lvl, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		fmt.Println(err)
+		vars.Log.Fatal(err)
+	}
+	logger := &logrus.Logger{
+		Out: logFile,
+		Level: lvl,
+		Formatter: &easy.Formatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		LogFormat: "[%lvl%]: %time% - %msg%\n",
+		},
+	}
+
+	return logger
 }

@@ -1,2 +1,4 @@
 catalog-server
 todo.txt
+.env
+*.log

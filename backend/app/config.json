@@ -1,0 +1,15 @@
+{
+	"DB_NAME": "catalog_db",
+	"DB_USER": "catalog_user",
+	"DB_PASSOWRD": "ENV_CATALOG_DB_PASSOWRD",
+	"DB_SSLMODE": "disable",
+
+	"REDIS_IP": "localhost",
+	"REDIS_PORT": "6379",
+	"REDIS_PASSWORD": "ENV_CATALOG_REDIS_PASSWORD",
+	"REDIS_DB": 0,
+
+	"TEMPLATES_DIR": "/catalog/frontend/templates/",
+
+	"SECRET": "ENV_CATALOG_SECRET"
+}
