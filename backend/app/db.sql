@@ -1,11 +1,10 @@
-DROP DATABASE IF EXISTS catalog_db;
-CREATE DATABASE catalog_db;
-
 CREATE USER catalog_user WITH ENCRYPTED PASSWORD 'password';
 ALTER ROLE catalog_user SET client_encoding TO 'utf8';
 ALTER ROLE catalog_user SET default_transaction_isolation TO 'read committed';
 ALTER ROLE catalog_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE catalog_db TO catalog_user;
+
+DROP DATABASE IF EXISTS catalog_db;
+CREATE DATABASE catalog_db WITH OWNER catalog_user;
 
 # \c catalog_db catalog_user
 
@@ -57,6 +56,10 @@ CREATE TABLE items(
 	  REFERENCES categories(category_id)
 	  ON DELETE CASCADE
 );
+
+CREATE INDEX users_id_idx ON users(user_id);
+CREATE INDEX users_group_id_idx ON users(group_id);
+CREATE INDEX items_category_id_idx ON items(category_id);
 
 insert into groups(group_name) values('test_group');
 insert into categories(category_name, group_id) values('test_category', 1);

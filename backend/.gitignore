@@ -1,4 +1,6 @@
 catalog-server
+migration
+
 todo.txt
 .env
 *.log
