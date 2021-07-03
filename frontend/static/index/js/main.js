@@ -115,7 +115,8 @@ add_window_add_btn.addEventListener("click", ()=>{
 		// finding category
 		let category_name = add_window_input_category.value;
 		let description = (add_window_input_description.value).escape();
-		let group = document.getElementById((category_name).escape().toLowerCase().replaceAll(" ", "_"));
+		let group = document.getElementById((category_name).escape().replaceAll(" ", "_"));
+		console.log(category_name, group)
 
 		// chech if group with "category_name" was found
 		if (!group) {
@@ -137,7 +138,7 @@ add_window_add_btn.addEventListener("click", ()=>{
 			group_item_btn.classList.add("main__group-item--btn");
 			group_item_img.classList.add("main__group-item--img");
 
-			group_item_img.src = "img/close.svg";
+			group_item_img.src = "/static/index/img/close.svg";
 			group_item_img.alt = "close";
 			group_item_img.style.width = "20px";
 			group_item_img.style.height = "20px";
@@ -214,7 +215,7 @@ menu_window_add_category.addEventListener("click", ()=>{
 
 	// finding category
 	let category_name = (menu_window_add_input_category.value).escape();
-	let category_id = (category_name.toLowerCase().replaceAll(" ", "_"));
+	let category_id = (category_name.replaceAll(" ", "_"));
 	let category = document.getElementById(category_id);
 
 	if (category_name == "") {
@@ -232,7 +233,7 @@ menu_window_add_category.addEventListener("click", ()=>{
 		let category = document.createElement("div");
 		let category_title = document.createElement("p");
 
-		let category_id = category_name.toLowerCase().replaceAll(" ", "_");
+		let category_id = category_name.replaceAll(" ", "_");
 
 		category.classList.add("main__group");
 		category_title.classList.add("main__group-title");
@@ -259,7 +260,7 @@ menu_window_delete_category.addEventListener("click", ()=>{
 	}
 
 	// finding category
-	let category_id = (category_name.toLowerCase().replaceAll(" ", "_")).escape();
+	let category_id = (category_name.replaceAll(" ", "_")).escape();
 	console.log(category_id)
 	let category = document.getElementById(category_id);
 	
@@ -478,7 +479,7 @@ function search(str) {
 				if (child.nodeType != 3) {
 					if (child.childElementCount != 0) {
 						// if it's item:
-						let text = child.children[0].innerText.toLowerCase();
+						let text = child.children[0].innerText;
 						inner_strings.push(text);
 					} else {
 						// if it's title:
@@ -498,7 +499,7 @@ function search(str) {
 
 		// find logic
 		element["innerText"].forEach(string=>{
-			if (string.includes(str.toLowerCase())) {
+			if (string.includes(str)) {
 				found = true;
 			}
 		});
@@ -514,7 +515,7 @@ function search(str) {
 		output.forEach(element=>{
 			// enumarte output array
 			let category_name = element;
-			let group = document.getElementById((element).escape().toLowerCase().replaceAll(" ", "_")).cloneNode(true);
+			let group = document.getElementById((element).escape().replaceAll(" ", "_")).cloneNode(true);
 			
 			// copy elements from main to search output
 			search_output.appendChild(group);
@@ -562,6 +563,7 @@ function newRJWT() {
 	})
 	.then((data) => {
 		if (data.success) {
+			localStorage.setItem("jwt", data.data.jwt);
 			localStorage.setItem("rjwt", data.data.rjwt);
 		}
 	})
@@ -574,7 +576,6 @@ function newJWT() {
 		body: JSON.stringify({
 			"action": "new_jwt",
 			"data": {
-				"rjwt": localStorage.getItem("rjwt"),
 				"jwt": localStorage.getItem("jwt")
 			}
 		})
@@ -587,9 +588,9 @@ function newJWT() {
 		} else if (status == 400) { // bad request
 			document.location.reload();
 		} else if (status == 401) { // unathorized
-			document.location.reload();
+			newRJWT();
 		} else if (status == 500) { // internal server error
-			newJWT();
+			document.location.reload();
 		} else if (status == 503) { // service unaviable
 			showWarning("Сервис временно недоступен, попробуйте воспользоваться им позже.");
 			setTimeout(()=>{

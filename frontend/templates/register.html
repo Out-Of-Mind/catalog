@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Регистрация</title>
+
+	<link rel="stylesheet" href="/static/register/css/styles.min.css">
+</head>
+<body class="valid">
+	<form class="form" action="/register" method="POST">
+		<div class="form-links">	
+			<a href="/login" class="form-links--link first-link">Вход</a>
+			<a href="/register" class="form-links--link second-link active">Регистрация</a>
+		</div>
+		
+		<div class="form__register">
+			<div class="form__register-wrapper">
+				<label id="login-label" class="form__register-label" for="login"></label>
+				<input id="login" class="form__register-input" type="text" name="login" placeholder="Логин" required autofocus>
+			</div>
+
+			<div class="form__register-wrapper">
+				<label id="email-label" class="form__register-label" for="email"></label>
+				<input id="email" class="form__register-input" type="text" name="email" placeholder="Эмейл" required>
+			</div>
+
+			<div class="form__register-wrapper">
+				<label id="password-label" class="form__register-label" for="password"></label>
+				<input id="password" class="form__register-input" type="password" name="password" placeholder="Пароль" required>
+			</div>
+
+			<div class="form__register-wrapper">
+				<label id="repassword-label" class="form__register-label" for="repassword"></label>
+				<input id="repassword" class="form__register-input" type="password" name="repassword" placeholder="Введите пароль ещё раз" required>
+			</div>
+
+			<input type="hidden" name="gorilla.csrf.Token" value="{{ .CSRFToken }}">
+
+			<label class="form__register-checkbox"><input type="checkbox">Показать пароль</label>
+			
+			<button class="form__register-submit">Зарегестрироваться</button>
+		</div>
+	</form>
+
+	<div class="error__window  {{ if .Error.Show }}active{{ end }}">
+		<p class="error__window--message">{{ if .Error.Show }}{{ .Error.Text }}{{ end }}</p>
+	</div>
+
+	<script src="/static/register/js/main.min.js"></script>
+</body>
+</html>

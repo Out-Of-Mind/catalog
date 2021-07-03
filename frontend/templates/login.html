@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Вход</title>
+
+	<link rel="stylesheet" href="/static/login/css/styles.min.css">
+</head>
+<body>
+	<form class="form" action="/login" method="POST">
+		<div class="form-links">	
+			<a href="/login" class="form-links--link first-link active">Вход</a>
+			<a href="/register" class="form-links--link second-link">Регистрация</a>
+		</div>
+		
+		<div class="form__login">
+			<input class="form__login-input" type="text" name="login" placeholder="Логин" required>
+			<input class="form__login-input" type="password" name="password" placeholder="Пароль" required>
+			<input type="hidden" name="gorilla.csrf.Token" value="{{ .CSRFToken }}">
+			<button class="form__login-submit">Войти</button>
+		</div>
+
+		<a class="form--forgot" href="/reset">Забыли пароль?</a>
+	</form>
+
+	<div class="error__window  {{ if .Error.Show }}active{{ end }}">
+		<p class="error__window--message">{{ if .Error.Show }}{{ .Error.Text }}{{ end }}</p>
+	</div>
+
+	<script src="/static/login/js/main.min.js"></script>
+</body>
+</html>

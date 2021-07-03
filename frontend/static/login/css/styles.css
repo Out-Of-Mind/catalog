@@ -1,0 +1,166 @@
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
+ul[role=list],
+ol[role=list] {
+  list-style: none;
+}
+
+ul,
+li {
+  margin: 0;
+  padding: 0;
+  text-indent: 0;
+  list-style: none;
+}
+
+/* Set core root defaults */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Set core body defaults */
+body {
+  min-height: 100vh;
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
+}
+
+/* A elements that don't have a class get default styles */
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+}
+
+a {
+  text-decoration: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Make images easier to work with */
+img,
+picture {
+  max-width: 100%;
+  display: block;
+}
+
+/* Inherit fonts for inputs and buttons */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  background-color: rgba(0, 0, 0, 0);
+  border: none;
+  outline: none;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form {
+  margin: auto;
+  width: 300px;
+  height: 260px;
+  z-index: 10;
+  border-radius: 4px;
+  padding: 30px 20px;
+  background-color: rgba(238, 238, 238, 0.1);
+  box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.2);
+}
+.form-links {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+.form-links--link {
+  margin: 0 5px;
+  color: #708080;
+  border-bottom: 2px solid transparent;
+  transition: 0.4s;
+}
+.form-links--link.active {
+  border-color: blue;
+}
+.form__login {
+  height: 150px;
+}
+.form__login-input, .form__login-submit {
+  margin: 3px 0;
+}
+.form__login-input {
+  width: 260px;
+  height: 35px;
+  border: 2px solid #708090;
+  border-radius: 4px;
+  outline: none;
+  padding: 5px 8px;
+  color: #708090;
+  background-color: rgba(238, 238, 238, 0.1);
+}
+.form__login-submit {
+  position: relative;
+  color: #708080;
+  transition: 0.4s;
+  justify-self: start;
+}
+.form__login-submit:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
+  height: 2px;
+  width: 90%;
+  border-radius: 4px;
+  background-color: #708090;
+}
+.form__login-submit:hover:after {
+  background-color: blue;
+}
+.form--forgot {
+  color: #708090;
+}
+
+.error__window {
+  position: fixed;
+  bottom: 20px;
+  left: -220px;
+  padding: 10px;
+  width: 200px;
+  color: white;
+  background-color: #e35;
+  border-radius: 4px;
+  transition: 0.4s;
+}
+.error__window.active {
+  left: 20px;
+}
+
+/*# sourceMappingURL=styles.css.map */
