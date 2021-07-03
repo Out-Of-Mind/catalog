@@ -1,59 +1,59 @@
 package routes
 
 import (
-	vars "github.com/out-of-mind/catalog/variables"
-	"github.com/out-of-mind/catalog/structures"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/gorilla/csrf"
+	"github.com/out-of-mind/catalog/structures"
+	vars "github.com/out-of-mind/catalog/variables"
 	"github.com/satori/uuid"
+	"golang.org/x/crypto/bcrypt"
 
-	"encoding/base64"
-	"crypto/sha256"
-	"encoding/json"
-	"html/template"
-	"database/sql"
 	"crypto/hmac"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"html"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"unicode"
-	"strings"
-	"strconv"
-	"errors"
 	"regexp"
-	"html"
-	"time"
 	"sort"
+	"strconv"
+	"strings"
+	"time"
+	"unicode"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("session_token")
-    sessionToken := c.Value
+	sessionToken := c.Value
 
 	userId, _ := vars.Cache.Get(vars.CTX, sessionToken).Result()
 	vars.Log.Debug("user_id: ", userId)
 
-    vars.Cache.Del(vars.CTX, sessionToken)
-    vars.Log.Debug("setting new cookie")
+	vars.Cache.Del(vars.CTX, sessionToken)
+	vars.Log.Debug("setting new cookie")
 
-    sessionToken = uuid.NewV4().String()
+	sessionToken = uuid.NewV4().String()
 
-	_, err := vars.Cache.Set(vars.CTX, sessionToken, userId, 720 * time.Hour).Result()
+	_, err := vars.Cache.Set(vars.CTX, sessionToken, userId, 720*time.Hour).Result()
 	if err != nil {
 		vars.Log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name:    "session_token",
-		Value:   sessionToken,
-		Domain: ".catalog.cc",
-		Expires: time.Now().Add(720 * time.Hour),
+		Name:     "session_token",
+		Value:    sessionToken,
+		Domain:   ".catalog.cc",
+		Expires:  time.Now().Add(720 * time.Hour),
 		HttpOnly: true,
 		SameSite: 2,
 	})
-	
-	tmpl, err := template.ParseFiles(vars.TemplateDir+"index.html")
+
+	tmpl, err := template.ParseFiles(vars.TemplateDir + "index.html")
 	if err != nil {
 		vars.Log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -70,100 +70,100 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := vars.DB.Query("SELECT categories.category_name, categories.category_id FROM categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id", userIdInt)
-    if err != nil {
-        vars.Log.Error(err)
-    }
-    defer rows.Close()
-
-    categoriesMap := make(map[int64]string)
-
-    for rows.Next() {
-    	var (
-        	categoryName string
-        	categoryId int64
-    	)
-        err = rows.Scan(&categoryName, &categoryId)
-        if err != nil {
-            vars.Log.Error(err)
-        }
-        categoriesMap[categoryId] = categoryName
-    }
-
-    rows, err = vars.DB.Query("SELECT items.item_name, items.category_id FROM items, categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id", userIdInt)
 	if err != nil {
-        vars.Log.Error(err)
-    }
-    defer rows.Close()
+		vars.Log.Error(err)
+	}
+	defer rows.Close()
 
-    itemsMap := make(map[int64][]string)
+	categoriesMap := make(map[int64]string)
 
-    for rows.Next() {
-    	var (
-        	itemName string
-        	categoryId int64
-    	)
-        err = rows.Scan(&itemName, &categoryId)
-        if err != nil {
-            vars.Log.Println(err)
-        }
-        itemsMap[categoryId] = append(itemsMap[categoryId], itemName)
-    }
+	for rows.Next() {
+		var (
+			categoryName string
+			categoryId   int64
+		)
+		err = rows.Scan(&categoryName, &categoryId)
+		if err != nil {
+			vars.Log.Error(err)
+		}
+		categoriesMap[categoryId] = categoryName
+	}
 
-    var indexItems structures.IndexItems
+	rows, err = vars.DB.Query("SELECT items.item_name, items.category_id FROM items, categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id AND items.category_id=categories.category_id", userIdInt)
+	if err != nil {
+		vars.Log.Error(err)
+	}
+	defer rows.Close()
 
-    for id := range categoriesMap {
-    	var indexData structures.IndexData
+	itemsMap := make(map[int64][]string)
 
-    	indexData.ID = id
-    	indexData.CategoryName = categoriesMap[id]
-    	indexData.CategoryID = strings.ReplaceAll(categoriesMap[id], " ", "_")
-    	for _, itemName := range itemsMap[id] {
-    		indexData.ItemNames = append(indexData.ItemNames, itemName)
-    	}
-    	indexItems.Items = append(indexItems.Items, indexData)
-    }
+	for rows.Next() {
+		var (
+			itemName   string
+			categoryId int64
+		)
+		err = rows.Scan(&itemName, &categoryId)
+		if err != nil {
+			vars.Log.Println(err)
+		}
+		itemsMap[categoryId] = append(itemsMap[categoryId], itemName)
+	}
 
-    sort.Sort(structures.ByID(indexItems.Items))
+	var indexItems structures.IndexItems
 
-    var (
-    	jwt, rjwt structures.JWT
+	for id := range categoriesMap {
+		var indexData structures.IndexData
 
-    	jwtHeader, rjwtHeader structures.JWTHeader
-    	jwtPayload, rjwtPayload structures.JWTPayload
-    )
+		indexData.ID = id
+		indexData.CategoryName = categoriesMap[id]
+		indexData.CategoryID = strings.ReplaceAll(categoriesMap[id], " ", "_")
+		for _, itemName := range itemsMap[id] {
+			indexData.ItemNames = append(indexData.ItemNames, itemName)
+		}
+		indexItems.Items = append(indexItems.Items, indexData)
+	}
 
-    jwtHeader.Alg = "HS256"
-    jwtHeader.Type = "JWT"
+	sort.Sort(structures.ByID(indexItems.Items))
 
-    rjwtHeader = jwtHeader
+	var (
+		jwt, rjwt structures.JWT
 
-    jwtPayload.Exp = time.Now().Add(15 * time.Minute)
-    jwtPayload.Value = userIdInt
+		jwtHeader, rjwtHeader   structures.JWTHeader
+		jwtPayload, rjwtPayload structures.JWTPayload
+	)
 
-    rjwtPayload.Exp = time.Now().Add(24*7 * time.Hour)
-    rjwtPayload.Value = userIdInt
+	jwtHeader.Alg = "HS256"
+	jwtHeader.Type = "JWT"
 
-    jwt.Header = jwtHeader
-    jwt.Payload = jwtPayload
+	rjwtHeader = jwtHeader
 
-    rjwt.Header = rjwtHeader
-    rjwt.Payload = rjwtPayload
+	jwtPayload.Exp = time.Now().Add(15 * time.Minute)
+	jwtPayload.Value = userIdInt
 
-    jwtStr, err := newJWT(jwt)
-    rjwtStr, err := newJWT(rjwt)
+	rjwtPayload.Exp = time.Now().Add(24 * 7 * time.Hour)
+	rjwtPayload.Value = userIdInt
 
-    indexItems.JWT = jwtStr
-    indexItems.RJWT = rjwtStr
-	
+	jwt.Header = jwtHeader
+	jwt.Payload = jwtPayload
+
+	rjwt.Header = rjwtHeader
+	rjwt.Payload = rjwtPayload
+
+	jwtStr, err := newJWT(jwt)
+	rjwtStr, err := newJWT(rjwt)
+
+	indexItems.JWT = jwtStr
+	indexItems.RJWT = rjwtStr
+
 	w.Header().
-	Set("Content-Type", "text/html")
+		Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
-    tmpl.Execute(w, indexItems)
+	tmpl.Execute(w, indexItems)
 }
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().
-	Set("Content-Type", "text/html")
+		Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("/dashboard"))
 }
@@ -176,8 +176,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if login == "" || password == "" {
 			vars.Log.Println("login or password set to null")
 
-			var data structures.LoginData
-			var error structures.ErrorTemplate
+			var (
+				data  structures.LoginData
+				error structures.ErrorTemplate
+			)
 
 			error.Show = true
 			error.Text = "Логин или пароль не указан!"
@@ -187,8 +189,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 			showLoginHTML(w, data, error)
 		} else {
-			var result string
-			var userId int
+			var (
+				result string
+				userId int
+			)
 
 			row := vars.DB.QueryRow("SELECT password, user_id FROM users WHERE user_name=$1", login)
 			err := row.Scan(&result, &userId)
@@ -197,9 +201,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				if err == sql.ErrNoRows {
 					vars.Log.Println("Not found user by user_name")
-					
-					var data structures.LoginData
-					var error structures.ErrorTemplate
+
+					var (
+						data  structures.LoginData
+						error structures.ErrorTemplate
+					)
 
 					error.Show = true
 					error.Text = "Логин не верный!"
@@ -219,8 +225,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			if err = bcrypt.CompareHashAndPassword([]byte(result), []byte(password)); err != nil {
 				vars.Log.Println("Password isn't match with db password")
 
-				var data structures.LoginData
-				var error structures.ErrorTemplate
+				var (
+					data  structures.LoginData
+					error structures.ErrorTemplate
+				)
 
 				error.Show = true
 				error.Text = "Пароль не верный!"
@@ -234,7 +242,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 			sessionToken := uuid.NewV4().String()
 
-			_, err = vars.Cache.Set(vars.CTX, sessionToken, strconv.Itoa(userId), 720 * time.Hour).Result()
+			_, err = vars.Cache.Set(vars.CTX, sessionToken, strconv.Itoa(userId), 720*time.Hour).Result()
 			if err != nil {
 				vars.Log.Error(err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -243,10 +251,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			http.SetCookie(w, &http.Cookie{
-				Name:    "session_token",
-				Value:   sessionToken,
-				Domain: ".catalog.cc",
-				Expires: time.Now().Add(720 * time.Hour),
+				Name:     "session_token",
+				Value:    sessionToken,
+				Domain:   ".catalog.cc",
+				Expires:  time.Now().Add(720 * time.Hour),
 				HttpOnly: true,
 				SameSite: 2,
 			})
@@ -254,13 +262,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "dashboard", http.StatusTemporaryRedirect)
 		}
 	} else if r.Method == "GET" {
-		var data structures.LoginData
-		var error structures.ErrorTemplate
+		var (
+			data  structures.LoginData
+			error structures.ErrorTemplate
+		)
 
 		error.Show = false
 		data.CSRFToken = csrf.Token(r)
 		data.Error = error
-		
+
 		showLoginHTML(w, data, error)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -268,7 +278,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func showLoginHTML(w http.ResponseWriter, data structures.LoginData, error structures.ErrorTemplate) {
-	tmpl, err := template.ParseFiles(vars.TemplateDir+"login.html")
+	tmpl, err := template.ParseFiles(vars.TemplateDir + "login.html")
 	if err != nil {
 		vars.Log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -281,20 +291,20 @@ func showLoginHTML(w http.ResponseWriter, data structures.LoginData, error struc
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("session_token")
-    sessionToken := c.Value
+	sessionToken := c.Value
 
-    vars.Log.Println("deleting cookie")
+	vars.Log.Println("deleting cookie")
 
-    http.SetCookie(w, &http.Cookie{
-		Name:    "session_token",
-		Value:   "",
-		Domain: ".catalog.cc",
-		Expires: time.Now(),
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    "",
+		Domain:   ".catalog.cc",
+		Expires:  time.Now(),
 		HttpOnly: true,
 		SameSite: 2,
 	})
 
-    vars.Cache.Del(vars.CTX, sessionToken)
+	vars.Cache.Del(vars.CTX, sessionToken)
 
 	http.Redirect(w, r, "login", http.StatusTemporaryRedirect)
 }
@@ -309,8 +319,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if login == "" || email == "" || password == "" || repassword == "" {
 			vars.Log.Error("login or email or password or repassword set to null")
 
-			var data structures.RegisterData
-			var error structures.ErrorTemplate
+			var (
+				data  structures.RegisterData
+				error structures.ErrorTemplate
+			)
 
 			error.Show = true
 			error.Text = "Заполните все поля!"
@@ -326,8 +338,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if !matched {
 			vars.Log.Error("email regex failed")
 
-			var data structures.RegisterData
-			var error structures.ErrorTemplate
+			var (
+				data  structures.RegisterData
+				error structures.ErrorTemplate
+			)
 
 			error.Show = true
 			error.Text = "Введён не верный эмейл!"
@@ -342,8 +356,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if !verifyPassword(password) {
 			vars.Log.Error("password regex failed")
 
-			var data structures.RegisterData
-			var error structures.ErrorTemplate
+			var (
+				data  structures.RegisterData
+				error structures.ErrorTemplate
+			)
 
 			error.Show = true
 			error.Text = "Пароль должен содержать: одну маленькую букву, одну цифру, как минимум 8 символов!"
@@ -358,8 +374,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if password != repassword {
 			vars.Log.Error("passwords isn't match")
 
-			var data structures.RegisterData
-			var error structures.ErrorTemplate
+			var (
+				data  structures.RegisterData
+				error structures.ErrorTemplate
+			)
 
 			error.Show = true
 			error.Text = "Пароли не совпадают!"
@@ -387,8 +405,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			if strings.Contains(err.Error(), "users_user_name_key") {
 				vars.Log.Error("password regex failed")
 
-				var data structures.RegisterData
-				var error structures.ErrorTemplate
+				var (
+					data  structures.RegisterData
+					error structures.ErrorTemplate
+				)
 
 				error.Show = true
 				error.Text = "Пользователь с таким логином уже существует!"
@@ -418,27 +438,29 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 		sessionToken := uuid.NewV4().String()
 
-		_, err = vars.Cache.Set(vars.CTX, sessionToken, strconv.Itoa(userId), 720 * time.Hour).Result()
+		_, err = vars.Cache.Set(vars.CTX, sessionToken, strconv.Itoa(userId), 720*time.Hour).Result()
 		if err != nil {
 			vars.Log.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("500 Internal Server Error"))
 			return
 		}
-			
+
 		http.SetCookie(w, &http.Cookie{
-			Name:    "session_token",
-			Value:   sessionToken,
-			Domain: ".catalog.cc",
-			Expires: time.Now().Add(720 * time.Hour),
+			Name:     "session_token",
+			Value:    sessionToken,
+			Domain:   ".catalog.cc",
+			Expires:  time.Now().Add(720 * time.Hour),
 			HttpOnly: true,
 			SameSite: 2,
 		})
 
 		http.Redirect(w, r, "dashboard", http.StatusTemporaryRedirect)
 	} else if r.Method == "GET" {
-		var data structures.RegisterData
-		var error structures.ErrorTemplate
+		var (
+			data  structures.RegisterData
+			error structures.ErrorTemplate
+		)
 
 		error.Show = false
 
@@ -452,7 +474,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func showRegisterHTML(w http.ResponseWriter, data structures.RegisterData, error structures.ErrorTemplate) {
-	tmpl, err := template.ParseFiles(vars.TemplateDir+"register.html")
+	tmpl, err := template.ParseFiles(vars.TemplateDir + "register.html")
 	if err != nil {
 		vars.Log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -463,34 +485,36 @@ func showRegisterHTML(w http.ResponseWriter, data structures.RegisterData, error
 	tmpl.Execute(w, data)
 }
 func verifyPassword(s string) bool {
-    var (
-        hasMinLen  = false
-        hasLower   = false
-        hasNumber  = false
-    )
-    if len(s) >= 8 {
-        hasMinLen = true
-    }
-    for _, char := range s {
-        switch {
-        case unicode.IsLower(char):
-            hasLower = true
-        case unicode.IsNumber(char):
-            hasNumber = true
-        }
-    }
-    return hasMinLen && hasLower && hasNumber
+	var (
+		hasMinLen = false
+		hasLower  = false
+		hasNumber = false
+	)
+	if len(s) >= 8 {
+		hasMinLen = true
+	}
+	for _, char := range s {
+		switch {
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsNumber(char):
+			hasNumber = true
+		}
+	}
+	return hasMinLen && hasLower && hasNumber
 }
 
 func APIHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 
 	if len(body) > 0 {
-		var requestJSON structures.RequestJSON
-		var responseJSON structures.ResponseJSON
-		var data structures.ResponseDataJSON
-		var jwt structures.JWT
-		var rjwt structures.JWT
+		var (
+			requestJSON  structures.RequestJSON
+			responseJSON structures.ResponseJSON
+			data         structures.ResponseDataJSON
+			jwt          structures.JWT
+			rjwt         structures.JWT
+		)
 
 		vars.Log.Debug(string(body))
 
@@ -500,7 +524,7 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 			vars.Log.Error(err)
 
 			w.Header().
-			Set("Access-Control-Allow-Origin", "http://catalog.cc")
+				Set("Access-Control-Allow-Origin", "http://catalog.cc")
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("400 Bad Request"))
 			return
@@ -514,7 +538,7 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 			vars.Log.Debug("jwt or rjwt set to null")
 
 			w.Header().
-			Set("Access-Control-Allow-Origin", "http://catalog.cc")
+				Set("Access-Control-Allow-Origin", "http://catalog.cc")
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("401 Unauthorized"))
 			return
@@ -524,7 +548,7 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 			vars.Log.Error(err)
 
 			w.Header().
-			Set("Access-Control-Allow-Origin", "http://catalog.cc")
+				Set("Access-Control-Allow-Origin", "http://catalog.cc")
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("400 Bad Request"))
 			return
@@ -545,11 +569,11 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 						data.Error = "Категории с таким именем не найдено!"
 						responseJSON.Succes = false
 						responseJSON.Data = data
-	
+
 						response, _ := json.Marshal(responseJSON)
 
 						w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+							Set("Access-Control-Allow-Origin", "http://catalog.cc")
 						w.WriteHeader(http.StatusOK)
 						w.Write(response)
 						return
@@ -557,17 +581,17 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 						data.Error = "У вещей не могут быть одинаковые имена!"
 						responseJSON.Succes = false
 						responseJSON.Data = data
-	
+
 						response, _ := json.Marshal(responseJSON)
 
 						w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+							Set("Access-Control-Allow-Origin", "http://catalog.cc")
 						w.WriteHeader(http.StatusOK)
 						w.Write(response)
 						return
 					}
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -575,13 +599,13 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 
 				responseJSON.Succes = true
 				responseJSON.Data = data
-	
+
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
 				w.Header().
-				Set("Content-Type", "application/json")
+					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write(response)
 			case "delete_item":
@@ -600,7 +624,7 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -613,13 +637,13 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 					responseJSON.Succes = false
 					responseJSON.Data = data
 				}
-	
+
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
 				w.Header().
-				Set("Content-Type", "application/json")
+					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write(response)
 			case "add_category":
@@ -632,7 +656,7 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -640,13 +664,13 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 
 				responseJSON.Succes = true
 				responseJSON.Data = data
-	
+
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
 				w.Header().
-				Set("Content-Type", "application/json")
+					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write(response)
 			case "delete_category":
@@ -662,7 +686,7 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -675,13 +699,13 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 					responseJSON.Succes = false
 					responseJSON.Data = data
 				}
-	
+
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
 				w.Header().
-				Set("Content-Type", "application/json")
+					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write(response)
 			case "new_jwt":
@@ -690,37 +714,37 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 				if jwt.Payload.Exp.Sub(time.Now()).Seconds() >= 30 {
 					vars.Log.Debug("big expiration: ", jwt.Payload.Exp.Sub(time.Now()).Seconds())
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
 				}
 
-		    	jwt.Payload.Exp = time.Now().Add(15 * time.Minute)
+				jwt.Payload.Exp = time.Now().Add(15 * time.Minute)
 
-			    jwtStr, err := newJWT(jwt)
-			    if err != nil {
-			    	vars.Log.Error(err)
+				jwtStr, err := newJWT(jwt)
+				if err != nil {
+					vars.Log.Error(err)
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
-			    }
+				}
 
 				data.JWT = jwtStr
 
 				responseJSON.Succes = true
 				responseJSON.Data = data
-	
+
 				response, _ := json.Marshal(responseJSON)
 
 				vars.Log.Debug("new jwt is set")
 
 				w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
 				w.Header().
-				Set("Content-Type", "application/json")
+					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write(response)
 			case "new_rjwt":
@@ -729,68 +753,68 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 				if rjwt.Payload.Exp.Sub(time.Now()).Seconds() >= 30 {
 					vars.Log.Debug("big expiration: ", rjwt.Payload.Exp.Sub(time.Now()).Seconds())
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
 				}
 
 				var (
-    				jwt structures.JWT
+					jwt structures.JWT
 
-    				jwtHeader structures.JWTHeader
-    				jwtPayload structures.JWTPayload
-   				)
+					jwtHeader  structures.JWTHeader
+					jwtPayload structures.JWTPayload
+				)
 
-    			jwtHeader.Alg = "HS256"
-    			jwtHeader.Type = "JWT"
-    			jwtPayload.Value = rjwt.Payload.Value
+				jwtHeader.Alg = "HS256"
+				jwtHeader.Type = "JWT"
+				jwtPayload.Value = rjwt.Payload.Value
 
-    			jwt.Header = jwtHeader
-    			jwt.Payload = jwtPayload
+				jwt.Header = jwtHeader
+				jwt.Payload = jwtPayload
 
 				jwt.Payload.Exp = time.Now().Add(15 * time.Minute)
-		    	rjwt.Payload.Exp = time.Now().Add(24*7 * time.Hour)
+				rjwt.Payload.Exp = time.Now().Add(24 * 7 * time.Hour)
 
-			    jwtStr, err := newJWT(jwt)
-			    if err != nil {
-			    	vars.Log.Error(err)
+				jwtStr, err := newJWT(jwt)
+				if err != nil {
+					vars.Log.Error(err)
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
-			    }
-			    rjwtStr, err := newJWT(rjwt)
-			    if err != nil {
-			    	vars.Log.Error(err)
+				}
+				rjwtStr, err := newJWT(rjwt)
+				if err != nil {
+					vars.Log.Error(err)
 					w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
-			    }
+				}
 
 				data.JWT = jwtStr
 				data.RJWT = rjwtStr
 
 				responseJSON.Succes = true
 				responseJSON.Data = data
-	
+
 				response, _ := json.Marshal(responseJSON)
 
 				vars.Log.Debug("new rjwt and jwt is set")
 
 				w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
 				w.Header().
-				Set("Content-Type", "application/json")
+					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write(response)
 			default:
 				vars.Log.Debug("default")
 				w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
 				w.WriteHeader(http.StatusBadRequest)
 				w.Write([]byte("400 Bad Request"))
 			}
@@ -799,7 +823,7 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 		vars.Log.Debug("body is empty")
 
 		w.Header().
-		Set("Access-Control-Allow-Origin", "http://catalog.cc")
+			Set("Access-Control-Allow-Origin", "http://catalog.cc")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 Bad Request"))
 	}
@@ -814,28 +838,30 @@ func validateAndParseJWT(jwt string) (structures.JWT, error) {
 	header := jwtPieces[0]
 	payload := jwtPieces[1]
 	signature := jwtPieces[2]
-	
+
 	signatureBytes, err := base64.RawURLEncoding.DecodeString(signature)
 	if err != nil {
 		return structures.JWT{}, err
 	}
 	message := header + "." + payload
-	
+
 	if validMAC([]byte(message), signatureBytes, []byte(vars.Secret)) {
 		headerBytes, err := base64.RawURLEncoding.DecodeString(header)
 		if err != nil {
 			return structures.JWT{}, err
 		}
-		
+
 		payloadBytes, err := base64.RawURLEncoding.DecodeString(payload)
 		if err != nil {
 			return structures.JWT{}, err
 		}
-		
-		var jwt structures.JWT
-		var jwtHeader structures.JWTHeader
-		var jwtPayload structures.JWTPayload
-		var jwtSignature structures.JWTSignature
+
+		var (
+			jwt          structures.JWT
+			jwtHeader    structures.JWTHeader
+			jwtPayload   structures.JWTPayload
+			jwtSignature structures.JWTSignature
+		)
 
 		err = json.Unmarshal(headerBytes, &jwtHeader)
 		if err != nil {
@@ -846,7 +872,7 @@ func validateAndParseJWT(jwt string) (structures.JWT, error) {
 		if err != nil {
 			return structures.JWT{}, err
 		}
-		
+
 		if jwtPayload.Exp.Sub(time.Now()).Minutes() <= 0 {
 			return structures.JWT{}, errors.New("jwt: jwt token expired")
 		}
@@ -854,9 +880,9 @@ func validateAndParseJWT(jwt string) (structures.JWT, error) {
 		jwtSignature.Hash = string(signatureBytes)
 		jwt.Header = jwtHeader
 		jwt.Payload = jwtPayload
-		
+
 		jwt.Signature = jwtSignature
-		
+
 		return jwt, nil
 	} else {
 		return structures.JWT{}, errors.New("jwt: signatures isn't matched")
@@ -866,7 +892,7 @@ func validMAC(message, messageMAC, key []byte) bool {
 	mac := hmac.New(sha256.New, key)
 	mac.Write(message)
 	expectedMAC := mac.Sum(nil)
-	
+
 	return hmac.Equal(messageMAC, expectedMAC)
 }
 func newJWT(jwt structures.JWT) (string, error) {
@@ -878,19 +904,19 @@ func newJWT(jwt structures.JWT) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	headerStr := base64.RawURLEncoding.EncodeToString(header)
 	payloadStr := base64.RawURLEncoding.EncodeToString(payload)
-	
+
 	message := headerStr + "." + payloadStr
-	
+
 	mac := hmac.New(sha256.New, []byte(vars.Secret))
 	mac.Write([]byte(message))
 	signature := mac.Sum(nil)
-	
+
 	signatureStr := base64.RawURLEncoding.EncodeToString(signature)
-	
+
 	JWT := message + "." + signatureStr
-	
+
 	return JWT, nil
 }
