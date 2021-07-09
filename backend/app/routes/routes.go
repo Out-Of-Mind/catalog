@@ -7,23 +7,16 @@ import (
 	"github.com/satori/uuid"
 	"golang.org/x/crypto/bcrypt"
 
-	"crypto/hmac"
-	"crypto/sha256"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"html"
-	"html/template"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +35,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		vars.Log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 Internal Server Error"))
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -53,7 +47,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		SameSite: 2,
 	})
 
-	tmpl, err := template.ParseFiles(vars.TemplateDir + "index.html")
 	if err != nil {
 		vars.Log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -155,10 +148,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	indexItems.JWT = jwtStr
 	indexItems.RJWT = rjwtStr
 
-	w.Header().
-		Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
-	tmpl.Execute(w, indexItems)
+	showHTML(w, "index.html", indexItems)
 }
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -187,7 +177,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			data.CSRFToken = csrf.Token(r)
 			data.Error = error
 
-			showLoginHTML(w, data, error)
+			showHTML(w, "login.html", data)
 		} else {
 			var (
 				result string
@@ -213,7 +203,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 					data.CSRFToken = csrf.Token(r)
 					data.Error = error
 
-					showLoginHTML(w, data, error)
+					showHTML(w, "login.html", data)
 					return
 				}
 				vars.Log.Error(err)
@@ -236,7 +226,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 				data.CSRFToken = csrf.Token(r)
 				data.Error = error
 
-				showLoginHTML(w, data, error)
+				showHTML(w, "login.html", data)
 				return
 			}
 
@@ -271,22 +261,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		data.CSRFToken = csrf.Token(r)
 		data.Error = error
 
-		showLoginHTML(w, data, error)
+		showHTML(w, "login.html", data)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		w.Write([]byte("405 Method Not Allowed"))
 	}
-}
-func showLoginHTML(w http.ResponseWriter, data structures.LoginData, error structures.ErrorTemplate) {
-	tmpl, err := template.ParseFiles(vars.TemplateDir + "login.html")
-	if err != nil {
-		vars.Log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 Internal Server Error"))
-		return
-	}
-
-	tmpl.Execute(w, data)
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -330,7 +309,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			data.CSRFToken = csrf.Token(r)
 			data.Error = error
 
-			showRegisterHTML(w, data, error)
+			showHTML(w, "register.html", data)
 			return
 		}
 
@@ -349,7 +328,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			data.CSRFToken = csrf.Token(r)
 			data.Error = error
 
-			showRegisterHTML(w, data, error)
+			showHTML(w, "register.html", data)
 			return
 		}
 
@@ -367,7 +346,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			data.CSRFToken = csrf.Token(r)
 			data.Error = error
 
-			showRegisterHTML(w, data, error)
+			showHTML(w, "register.html", data)
 			return
 		}
 
@@ -385,7 +364,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			data.CSRFToken = csrf.Token(r)
 			data.Error = error
 
-			showRegisterHTML(w, data, error)
+			showHTML(w, "register.html", data)
 			return
 		}
 
@@ -416,7 +395,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 				data.CSRFToken = csrf.Token(r)
 				data.Error = error
 
-				showRegisterHTML(w, data, error)
+				showHTML(w, "register.html", data)
 				return
 			}
 
@@ -467,41 +446,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		data.CSRFToken = csrf.Token(r)
 		data.Error = error
 
-		showRegisterHTML(w, data, error)
+		showHTML(w, "register.html", data)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		w.Write([]byte("405 Method Not Allowed"))
 	}
-}
-func showRegisterHTML(w http.ResponseWriter, data structures.RegisterData, error structures.ErrorTemplate) {
-	tmpl, err := template.ParseFiles(vars.TemplateDir + "register.html")
-	if err != nil {
-		vars.Log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 Internal Server Error"))
-		return
-	}
-
-	tmpl.Execute(w, data)
-}
-func verifyPassword(s string) bool {
-	var (
-		hasMinLen = false
-		hasLower  = false
-		hasNumber = false
-	)
-	if len(s) >= 8 {
-		hasMinLen = true
-	}
-	for _, char := range s {
-		switch {
-		case unicode.IsLower(char):
-			hasLower = true
-		case unicode.IsNumber(char):
-			hasNumber = true
-		}
-	}
-	return hasMinLen && hasLower && hasNumber
 }
 
 func APIHandler(w http.ResponseWriter, r *http.Request) {
@@ -827,96 +776,4 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 Bad Request"))
 	}
-}
-func unescapeUrl(path string) (string, error) {
-	unescapedPath, err := url.PathUnescape(path)
-
-	return unescapedPath, err
-}
-func validateAndParseJWT(jwt string) (structures.JWT, error) {
-	jwtPieces := strings.Split(jwt, ".")
-	header := jwtPieces[0]
-	payload := jwtPieces[1]
-	signature := jwtPieces[2]
-
-	signatureBytes, err := base64.RawURLEncoding.DecodeString(signature)
-	if err != nil {
-		return structures.JWT{}, err
-	}
-	message := header + "." + payload
-
-	if validMAC([]byte(message), signatureBytes, []byte(vars.Secret)) {
-		headerBytes, err := base64.RawURLEncoding.DecodeString(header)
-		if err != nil {
-			return structures.JWT{}, err
-		}
-
-		payloadBytes, err := base64.RawURLEncoding.DecodeString(payload)
-		if err != nil {
-			return structures.JWT{}, err
-		}
-
-		var (
-			jwt          structures.JWT
-			jwtHeader    structures.JWTHeader
-			jwtPayload   structures.JWTPayload
-			jwtSignature structures.JWTSignature
-		)
-
-		err = json.Unmarshal(headerBytes, &jwtHeader)
-		if err != nil {
-			return structures.JWT{}, err
-		}
-
-		err = json.Unmarshal(payloadBytes, &jwtPayload)
-		if err != nil {
-			return structures.JWT{}, err
-		}
-
-		if jwtPayload.Exp.Sub(time.Now()).Minutes() <= 0 {
-			return structures.JWT{}, errors.New("jwt: jwt token expired")
-		}
-
-		jwtSignature.Hash = string(signatureBytes)
-		jwt.Header = jwtHeader
-		jwt.Payload = jwtPayload
-
-		jwt.Signature = jwtSignature
-
-		return jwt, nil
-	} else {
-		return structures.JWT{}, errors.New("jwt: signatures isn't matched")
-	}
-}
-func validMAC(message, messageMAC, key []byte) bool {
-	mac := hmac.New(sha256.New, key)
-	mac.Write(message)
-	expectedMAC := mac.Sum(nil)
-
-	return hmac.Equal(messageMAC, expectedMAC)
-}
-func newJWT(jwt structures.JWT) (string, error) {
-	header, err := json.Marshal(jwt.Header)
-	if err != nil {
-		return "", err
-	}
-	payload, err := json.Marshal(jwt.Payload)
-	if err != nil {
-		return "", err
-	}
-
-	headerStr := base64.RawURLEncoding.EncodeToString(header)
-	payloadStr := base64.RawURLEncoding.EncodeToString(payload)
-
-	message := headerStr + "." + payloadStr
-
-	mac := hmac.New(sha256.New, []byte(vars.Secret))
-	mac.Write([]byte(message))
-	signature := mac.Sum(nil)
-
-	signatureStr := base64.RawURLEncoding.EncodeToString(signature)
-
-	JWT := message + "." + signatureStr
-
-	return JWT, nil
 }
