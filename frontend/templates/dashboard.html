@@ -9,7 +9,7 @@
 </head>
 <body>
 	<header class="header">
-		<p class="header__hello">Приветсвую вас, <span class="header__hello-username">{{ .username }}</span></p>
+		<p class="header__hello">Приветсвую вас, <span class="header__hello-username">{{ .UserName }}</span></p>
 	</header>
 
 	<main class="main">
@@ -25,37 +25,28 @@
 				</button>
 			</div>
 
+			{{ range item := .ListItems }}
 			<div class="main__group-item">
-				<p class="main__group-item--text">Дом 68, Киев</p>
+				<p class="main__group-item--text">{{ $item.Name }}</p>
 				<button class="main__group-item--btn">
 					<img class="main__group-item--img" src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px">
 				</button>
 			</div>
-			<div class="main__group-item">
-				<p class="main__group-item--text">Дом 69, Киев</p>
-				<button class="main__group-item--btn">
-					<img class="main__group-item--img" src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px">
-				</button>
-			</div>
+			{{ end }}
 		</div>
 
 		<div class="main__groups-admin main__group">
 			<p class="main__group-title">Группы которыми вы владеете</p>
 
+			{{ range item := .AdminItems }}
 			<div class="main__group-item">
-				<p class="main__group-item--text main__groups-admin--text" data-link="catalog.cc/groups/abcd">Дом 67, Киев</p>
+				<p class="main__group-item--text main__groups-admin--text" data-link="{{ $item.Link }}">{{ $item.name }}</p>
 				<button class="main__groups-admin--btns">
 					<img class="main__group-item--img main__groups-admin--btn-share" src="/static/dashboard/img/share.svg" alt="share" width="20px" height="20px">
 					<img class="main__group-item--img main__groups-admin--btn-close" src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px">
 				</button>
 			</div>
-			<div class="main__group-item">
-				<p class="main__group-item--text main__groups-admin--text" data-link="catalog.cc/groups/abce">Дом 68, Киев</p>
-				<button class="main__groups-admin--btns">
-					<img class="main__group-item--img  main__groups-admin--btn-share" src="/static/dashboard/img/share.svg" alt="share" width="20px" height="20px">
-					<img class="main__group-item--img main__groups-admin--btn-close" src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px">
-				</button>
-			</div>
+			{{ end }}
 
 		</div>
 
