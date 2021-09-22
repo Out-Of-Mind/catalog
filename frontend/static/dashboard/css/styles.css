@@ -1,0 +1,261 @@
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
+ul[role=list],
+ol[role=list] {
+  list-style: none;
+}
+
+ul,
+li {
+  margin: 0;
+  padding: 0;
+  text-indent: 0;
+  list-style: none;
+}
+
+/* Set core root defaults */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Set core body defaults */
+body {
+  min-height: 100vh;
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
+}
+
+/* A elements that don't have a class get default styles */
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+}
+
+a {
+  text-decoration: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Make images easier to work with */
+img,
+picture {
+  max-width: 100%;
+  display: block;
+}
+
+/* Inherit fonts for inputs and buttons */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  background-color: rgba(0, 0, 0, 0);
+  border: none;
+  outline: none;
+}
+
+.header {
+  position: relative;
+  height: 45px;
+  width: 100vw;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 0 15px 3px rgba(0, 0, 0, 0.4);
+}
+.header__hello {
+  position: absolute;
+  top: 6px;
+  right: 5px;
+  color: #708090;
+}
+.header__hello-username {
+  border-bottom: 2px solid blue;
+}
+
+.main {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+}
+.main__group {
+  width: 32%;
+  padding: 5px;
+  border-radius: 4px;
+  color: #708090;
+  box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.2);
+}
+.main__group-title {
+  width: 150px;
+  border-bottom: 2px solid blue;
+}
+.main__group-item {
+  position: relative;
+  border-bottom: 1px solid #667685;
+  border-radius: 2px;
+  margin: 5px 0;
+}
+.main__group-item--img {
+  transition: 0.5s;
+}
+.main__group-item--img:hover {
+  transform: rotate(180deg);
+}
+.main__group-item--text {
+  width: 92%;
+}
+.main__groups-admin--text {
+  width: 86%;
+}
+.main__group-item--btn, .main__groups-admin--btns {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+.main__groups-admin--btns {
+  display: flex;
+  justify-content: space-between;
+  width: 50px;
+}
+.main__group-item:last-child {
+  border: none;
+}
+.main__groups-title--wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+.main__groups-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 4px;
+  height: 35px;
+  width: 220px;
+  color: #708090;
+  border: 2px solid #667685;
+}
+.main__groups-btn path {
+  fill: #708090;
+}
+.main__groups-btn:hover, .main__groups-btn:hover path {
+  fill: white;
+  color: white;
+  background-color: #708090;
+}
+.main__settings-link {
+  display: block;
+}
+
+.add_group {
+  position: fixed;
+  top: -500px;
+  left: 35vw;
+  margin: 0 auto;
+  padding: 5px;
+  transition: 0.5s;
+  border-radius: 4px;
+  box-shadow: 0 0 15px 3px rgba(0, 0, 0, 0.4);
+  background-color: white;
+  width: 30vw;
+  height: 90px;
+}
+.add_group.active {
+  top: 30px;
+}
+.add_group-wrapper {
+  position: relative;
+}
+.add_group-wrapper--btn {
+  position: absolute;
+  top: 3px;
+  right: -5px;
+  transition: 0.5s;
+}
+.add_group-wrapper--btn:hover {
+  transform: rotate(180deg);
+}
+.add_group-input {
+  border: 2px solid #708090;
+  border-radius: 4px;
+  outline: none;
+  padding: 5px 8px;
+  color: #708090;
+}
+.add_group-input {
+  width: 90%;
+  margin-bottom: 10px;
+}
+.add_group-btn {
+  position: relative;
+  color: #708090;
+}
+.add_group-btn:hover:after {
+  background-color: blue;
+}
+.add_group-btn:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
+  height: 2px;
+  width: 90%;
+  border-radius: 4px;
+  background-color: #708090;
+}
+
+.error__window,
+.success__window,
+.warning__window {
+  position: fixed;
+  bottom: 20px;
+  left: -220px;
+  padding: 10px;
+  width: 200px;
+  color: white;
+  border-radius: 4px;
+  transition: 0.4s;
+}
+.error__window.active,
+.success__window.active,
+.warning__window.active {
+  left: 20px;
+}
+
+.error__window {
+  background-color: #e35;
+}
+
+.warning__window {
+  background-color: #fdd55e;
+}
+
+.success__window {
+  background-color: #5e8b7e;
+}
+
+/*# sourceMappingURL=styles.css.map */

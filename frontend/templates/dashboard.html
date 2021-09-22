@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Панель управления</title>
+
+	<link rel="stylesheet" href="/static/dashboard/css/styles.min.css">
+</head>
+<body>
+	<header class="header">
+		<p class="header__hello">Приветсвую вас, <span class="header__hello-username">{{ .username }}</span></p>
+	</header>
+
+	<main class="main">
+
+		<div class="main__groups-list main__group">
+			<div class="main__groups-title--wrapper">
+				<p class="main__group-title">Группы в которых вы состоите</p>
+				<button class="main__groups-btn add_group-create--btn">
+					<p>Создать группу</p>
+					<svg class="header__add-img" width="20px" height="20px" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Zm5-10a1,1,0,0,1-1,1H13v3a1,1,0,0,1-2,0V13H8a1,1,0,0,1,0-2h3V8a1,1,0,0,1,2,0v3h3A1,1,0,0,1,17,12Z"/>
+						<title>Add</title>
+					</svg>
+				</button>
+			</div>
+
+			<div class="main__group-item">
+				<p class="main__group-item--text">Дом 68, Киев</p>
+				<button class="main__group-item--btn">
+					<img class="main__group-item--img" src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px">
+				</button>
+			</div>
+			<div class="main__group-item">
+				<p class="main__group-item--text">Дом 69, Киев</p>
+				<button class="main__group-item--btn">
+					<img class="main__group-item--img" src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px">
+				</button>
+			</div>
+		</div>
+
+		<div class="main__groups-admin main__group">
+			<p class="main__group-title">Группы которыми вы владеете</p>
+
+			<div class="main__group-item">
+				<p class="main__group-item--text main__groups-admin--text" data-link="catalog.cc/groups/abcd">Дом 67, Киев</p>
+				<button class="main__groups-admin--btns">
+					<img class="main__group-item--img main__groups-admin--btn-share" src="/static/dashboard/img/share.svg" alt="share" width="20px" height="20px">
+					<img class="main__group-item--img main__groups-admin--btn-close" src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px">
+				</button>
+			</div>
+			<div class="main__group-item">
+				<p class="main__group-item--text main__groups-admin--text" data-link="catalog.cc/groups/abce">Дом 68, Киев</p>
+				<button class="main__groups-admin--btns">
+					<img class="main__group-item--img  main__groups-admin--btn-share" src="/static/dashboard/img/share.svg" alt="share" width="20px" height="20px">
+					<img class="main__group-item--img main__groups-admin--btn-close" src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px">
+				</button>
+			</div>
+
+		</div>
+
+		<div class="main__settings main__group">
+			<p class="main__group-title">Настройки</p>
+
+			<a class="main__settings-link" href="/destruct">Удалить аккаунт</a>
+			<a class="main__settings-link" href="/support">Поддержка</a>
+			<a class="main__settings-link" href="/logout">Выйти</a>
+		</div>
+	</main>
+
+	<div class="add_group">
+		<div class="add_group-wrapper">
+			<button class="add_group-wrapper--btn"><img src="/static/dashboard/img/close.svg" alt="close" width="20px" height="20px"></button>
+		</div>
+		<input class="add_group-input" type="text" placeholder="Группа">
+		<button class="add_group-btn">Создать</button>
+	</div>
+
+	<div class="error__window">
+		<p class="error__window--message"></p>
+	</div>
+
+	<div class="warning__window">
+		<p class="warning__window--message"></p>
+	</div>
+
+	<div class="success__window">
+		<p class="success__window--message"></p>
+	</div>
+
+	<input id="rjwt" type="hidden" value="{{ .RJWT }}">
+	<input id="jwt" type="hidden" value="{{ .JWT }}">
+
+	<script src="/static/dashboard/js/main.min.js"></script>
+</body>
+</html>
