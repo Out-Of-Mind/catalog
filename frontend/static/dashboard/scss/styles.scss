@@ -62,6 +62,9 @@
 	&__group-item--text {
 		width: 92%;
 	}
+	&__group-item--text:visited {
+		color: #708090;
+	}
 	&__groups-admin--text {
 		width: 86%;
 	}
@@ -214,4 +217,18 @@
 }
 .success__window {
 	background-color: #5e8b7e;
+}
+
+@media (max-width: 1024px) {
+	.main {
+		display: block;
+		&__group {
+			margin-bottom: 15px;
+			width: 100%;
+		}
+	}
+	.add_group {
+		width: 70vw;
+		left: 15vw;
+	}
 }

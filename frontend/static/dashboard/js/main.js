@@ -135,7 +135,7 @@ add_group_add_btn.addEventListener("click", ()=>{
 			parent2 = document.querySelector(".main__groups-admin");
 
 			item_list = document.createElement("div");
-			item_list_p = document.createElement("p");
+			item_link = document.createElement("a");
 			item_list_button = document.createElement("button");
 			item_list_img = document.createElement("img");
 
@@ -146,7 +146,7 @@ add_group_add_btn.addEventListener("click", ()=>{
 			item_admin_img_close = document.createElement("img");
 
 			item_list.classList.add("main__group-item");
-			item_list_p.classList.add("main__group-item--text");
+			item_link.classList.add("main__group-item--text");
 			item_list_button.classList.add("main__group-item--btn");
 			item_list_img.classList.add("main__group-item--img");
 
@@ -154,10 +154,10 @@ add_group_add_btn.addEventListener("click", ()=>{
 			item_list_img.style.width = "20px";
 			item_list_img.style.height = "20px";
 
-			item_list_p.innerText = group_name;
+			item_link.innerText = group_name;
 
 			item_list_button.appendChild(item_list_img);
-			item_list.appendChild(item_list_p);
+			item_list.appendChild(item_link);
 			item_list.appendChild(item_list_button);
 
 			item_admin.classList.add("main__group-item");
@@ -184,6 +184,16 @@ add_group_add_btn.addEventListener("click", ()=>{
 			item_admin.appendChild(item_admin_p);
 			item_admin.appendChild(item_admin_button);
 
+			item_admin_img_share.addEventListener("click", ()=>{
+				let link = item_admin_img_share.parentNode.parentNode.children[0].dataset.link;
+
+				navigator.clipboard.writeText(link).then(()=>{
+					showSuccess("Ссылка-приглашение на вступление в группу скопирована в буфер обмена!");
+				}, ()=>{
+					showError("Ссылка-приглашение на вступление в группу не была скопирована в буфер обмена!");
+				});
+			});
+
 			childs[0] = item_list;
 			childs[1] = item_admin;
 
@@ -198,7 +208,7 @@ add_group_add_btn.addEventListener("click", ()=>{
 });
 
 function add_group(parents, childs, group_name) {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "add_group",
@@ -230,7 +240,9 @@ function add_group(parents, childs, group_name) {
 	})
 	.then((data) => {
 		if (data.success) {
-			childs[1].children[0].setAttribute("data-link", data.data.link);
+			console.log(childs[0].children[0])
+			childs[0].children[0].href = "https://catalog.cc/select/"+data.data.select_link;
+			childs[1].children[0].setAttribute("data-link", data.data.invite_link);
 			parents[0].appendChild(childs[0]);
 			parents[1].appendChild(childs[1]);
 
@@ -245,7 +257,7 @@ function add_group(parents, childs, group_name) {
 }
 
 function delete_group(parent, child, group_name) {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "delete_group",
@@ -290,7 +302,7 @@ function delete_group(parent, child, group_name) {
 }
 
 function newRJWT() {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "new_rjwt",
@@ -327,7 +339,7 @@ function newRJWT() {
 }
 
 function newJWT() {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "new_jwt",

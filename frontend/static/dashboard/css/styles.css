@@ -127,6 +127,9 @@ button {
 .main__group-item--text {
   width: 92%;
 }
+.main__group-item--text:visited {
+  color: #708090;
+}
 .main__groups-admin--text {
   width: 86%;
 }
@@ -256,6 +259,21 @@ button {
 
 .success__window {
   background-color: #5e8b7e;
+}
+
+@media (max-width: 1024px) {
+  .main {
+    display: block;
+  }
+  .main__group {
+    margin-bottom: 15px;
+    width: 100%;
+  }
+
+  .add_group {
+    width: 70vw;
+    left: 15vw;
+  }
 }
 
 /*# sourceMappingURL=styles.css.map */

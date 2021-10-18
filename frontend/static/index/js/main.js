@@ -281,7 +281,7 @@ menu_window_delete_category.addEventListener("click", ()=>{
 });
 
 function add_category(parent, category, category_name) {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "add_category",
@@ -324,7 +324,7 @@ function add_category(parent, category, category_name) {
 	});
 }
 function delete_category(parent, category, category_name) {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "delete_category",
@@ -368,7 +368,7 @@ function delete_category(parent, category, category_name) {
 }
 
 function add_item(parent, group_item, group_item_text, category_name) {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "add_item",
@@ -413,7 +413,7 @@ function add_item(parent, group_item, group_item_text, category_name) {
 	});
 }
 function delete_item(parent, child, group_item_text, category_name) {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "delete_item",
@@ -533,7 +533,7 @@ function search(str) {
 }
 
 function newRJWT() {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "new_rjwt",
@@ -570,7 +570,7 @@ function newRJWT() {
 }
 
 function newJWT() {
-	fetch("http://api.catalog.cc/", {
+	fetch("https://api.catalog.cc/", {
 		method: "POST",
 		body: JSON.stringify({
 			"action": "new_jwt",
