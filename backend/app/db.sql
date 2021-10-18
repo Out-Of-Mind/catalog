@@ -13,6 +13,10 @@ CREATE TABLE groups(
    group_id INT GENERATED ALWAYS AS IDENTITY,
    group_name VARCHAR(255) NOT NULL,
    UNIQUE(group_name),
+   invite_link VARCHAR(32) NOT NULL,
+   UNIQUE(invite_link),
+   select_link VARCHAR(32) NOT NULL,
+   UNIQUE(select_link),
    PRIMARY KEY(group_id)
 );
 
@@ -29,6 +33,20 @@ CREATE TABLE users(
       FOREIGN KEY(group_id) 
 	  REFERENCES groups(group_id)
 	  ON DELETE SET NULL
+);
+
+DROP TABLE IF EXISTS groups_users;
+CREATE TABLE groups_users(
+   user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+   group_id INT NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
+   CONSTRAINT pk_group_user PRIMARY KEY (user_id, group_id)
+);
+
+DROP TABLE IF EXISTS owned_groups;
+CREATE TABLE owned_groups(
+   user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+   group_id INT NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
+   CONSTRAINT pk_owned_group PRIMARY KEY (user_id, group_id)
 );
 
 DROP TABLE IF EXISTS categories;
@@ -80,4 +98,15 @@ DELETE FROM items WHERE item_name='a' AND category_id=(SELECT category_id FROM c
 
 INSERT INTO categories(category_name, group_id) VALUES('категория', (SELECT group_id FROM users WHERE user_id=2));
 
-DELETE FROM categories WHERE category_name='категория' AND group_id=(SELECT group_id FROM users WHERE user_id=2)
+DELETE FROM categories WHERE category_name='категория' AND group_id=(SELECT group_id FROM users WHERE user_id=2);
+
+SELECT groups.group_name FROM groups_users, groups WHERE groups_users.group_id=groups.group_id AND groups_users.user_id=1;
+SELECT groups.group_name, owned_groups.link FROM owned_groups, groups WHERE owned_groups.group_id=groups.group_id AND owned_groups.user_id=1;
+
+UPDATE users SET group_id=(SELECT group_id FROM groups WHERE invite_link=$1) WHERE user_id=$2;
+SELECT groups_users.group_id FROM groups_users WHERE groups_users.group_id=(SELECT group_id FROM groups WHERE invite_link=$1);
+UPDATE users SET group_id=(SELECT groups_users.group_id FROM groups_users WHERE groups_users.group_id=(SELECT group_id FROM groups WHERE select_link='test')) WHERE user_id=1;
+
+UPDATE users SET group_id=(SELECT owned_groups.group_id FROM owned_groups WHERE owned_groups.link='qqqqqq') WHERE user_id=1;
+
+SELECT * FROM owned_groups WHERE user_id=1 AND group_id=4;
