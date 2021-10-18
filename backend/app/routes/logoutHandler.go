@@ -19,6 +19,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		Domain:   ".catalog.cc",
 		Expires:  time.Now(),
 		HttpOnly: true,
+		Secure: true,
 		SameSite: 2,
 	})
 

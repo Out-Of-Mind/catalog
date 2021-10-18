@@ -35,6 +35,7 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 		Domain:   ".catalog.cc",
 		Expires:  time.Now().Add(720 * time.Hour),
 		HttpOnly: true,
+		Secure: true,
 		SameSite: 2,
 	})
 

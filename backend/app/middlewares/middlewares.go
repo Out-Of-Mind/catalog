@@ -15,7 +15,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
 		vars.Log.Println(r.RequestURI)
 
-		if r.RequestURI == "/login" || r.RequestURI == "/register" || r.RequestURI == "/api" { // test only (!=) in prod set to (==)
+		if r.RequestURI == "/login" || r.RequestURI == "/register" || r.RequestURI == "/api" {
 			vars.Log.Debug("Next handler without cookies set")
 			next.ServeHTTP(w, r)
 		} else {
@@ -52,8 +52,7 @@ func CSRFMiddleware(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.RequestURI == "/login" || r.RequestURI == "/register" {
-			CSRF := csrf.Protect(vars.Secret, csrf.Secure(false))
-			// csrf.Secure(false) only for debug
+			CSRF := csrf.Protect(vars.Secret, csrf.Secure(true))
 			CSRF(next).ServeHTTP(w, r)
 		} else {
 			next.ServeHTTP(w, r)

@@ -49,7 +49,9 @@ func main() {
 	r.HandleFunc("/register", routes.RegisterHandler)
 	r.HandleFunc("/logout", routes.LogoutHandler)
 	r.HandleFunc("/api", routes.APIHandler).
-		Methods("POST")
+		Methods("POST").
+		Host("catalog.cc").
+		Host("dashboard.catalog.cc")
 
 	r.Use(middlewares.CSRFMiddleware)
 	r.Use(middlewares.LoggingMiddleware)

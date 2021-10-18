@@ -65,7 +65,7 @@ func inviteHandler(w http.ResponseWriter, r *http.Request) {
 	if err := tx.Commit(); err != nil {
 		vars.Log.Error(err)
 		w.Header().
-			Set("Access-Control-Allow-Origin", "http://catalog.cc")
+			Set("Access-Control-Allow-Origin", "https://catalog.cc")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 Internal Server Error"))
 		return

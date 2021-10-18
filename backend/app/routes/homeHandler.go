@@ -37,6 +37,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		Domain:   ".catalog.cc",
 		Expires:  time.Now().Add(720 * time.Hour),
 		HttpOnly: true,
+		Secure: true,
 		SameSite: 2,
 	})
 
@@ -60,7 +61,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	err = vars.DB.QueryRow("SELECT users.group_id FROM users WHERE users.user_id=$1", userIdInt).Scan(&groupId)
 	if err != nil {
 		if strings.Contains(err.Error(), "sql: Scan error on column index 0,") {
-			http.Redirect(w, r, "http://dashboard.catalog.cc/", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, "https://dashboard.catalog.cc/", http.StatusTemporaryRedirect)
 			return
 		}
 		vars.Log.Error(err)
