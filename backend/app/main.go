@@ -109,11 +109,15 @@ func initDB() {
 		vars.Log.Fatal("Cannot access postgresql db, exit with error: ", err)
 	}
 
-	_, err = vars.DB.Exec("SELECT * FROM groups")
+	err = vars.DB.Ping()
 	if err != nil {
 		fmt.Println("Cannot access postgresql db, exit with error: ", err)
 		vars.Log.Fatal("Cannot access postgresql db, exit with error: ", err)
 	}
+
+	vars.DB.SetMaxOpenConns(30)
+	vars.DB.SetMaxIdleConns(30)
+	vars.DB.SetConnMaxLifetime(15*time.Minute)
 }
 
 func initLogger(path, logLevel string) *logrus.Logger {
