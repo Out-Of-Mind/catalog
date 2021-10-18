@@ -11,10 +11,10 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
+	"math/big"
 	"net/http"
 	"net/url"
 	"strings"
-	"math/big"
 	"time"
 	"unicode"
 )
@@ -143,7 +143,6 @@ func newJWT(jwt structures.JWT) (string, error) {
 
 	return JWT, nil
 }
-
 
 func randomLink() (string, error) {
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

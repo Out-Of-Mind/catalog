@@ -4,15 +4,15 @@ import (
 	"github.com/out-of-mind/catalog/structures"
 	vars "github.com/out-of-mind/catalog/variables"
 
-	"encoding/json"
-	"html"
 	"context"
+	"database/sql"
+	"encoding/json"
+	_ "github.com/lib/pq"
+	"html"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
-	"database/sql"
-	_ "github.com/lib/pq"
 )
 
 func apiHandler(w http.ResponseWriter, r *http.Request) {

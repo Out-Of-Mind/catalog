@@ -8,10 +8,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"database/sql"
+	_ "github.com/lib/pq"
 	"net/http"
 	"strconv"
 	"time"
-	_ "github.com/lib/pq"
 )
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +107,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				Domain:   ".catalog.cc",
 				Expires:  time.Now().Add(720 * time.Hour),
 				HttpOnly: true,
-				Secure: true,
+				Secure:   true,
 				SameSite: 2,
 			})
 

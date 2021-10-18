@@ -6,11 +6,11 @@ import (
 	"github.com/gorilla/mux"
 
 	"context"
+	"database/sql"
+	_ "github.com/lib/pq"
 	"net/http"
 	"strconv"
 	"strings"
-	"database/sql"
-	_ "github.com/lib/pq"
 )
 
 func inviteHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +49,7 @@ func inviteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = vars.DB.ExecContext(txCtx, "INSERT INTO groups_users(user_id, group_id) VALUES($1, $2)",  userIdInt, groupId)
+	_, err = vars.DB.ExecContext(txCtx, "INSERT INTO groups_users(user_id, group_id) VALUES($1, $2)", userIdInt, groupId)
 	if err != nil {
 		if strings.Contains(err.Error(), "pk_group_user") {
 
