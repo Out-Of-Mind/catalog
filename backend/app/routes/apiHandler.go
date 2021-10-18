@@ -35,7 +35,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 			vars.Log.Error(err)
 
 			w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+				Set("Access-Control-Allow-Origin", "https://catalog.cc")
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("400 Bad Request"))
 			return
@@ -49,7 +49,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 			vars.Log.Debug("jwt or rjwt set to null")
 
 			w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+				Set("Access-Control-Allow-Origin", "https://catalog.cc")
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("401 Unauthorized"))
 			return
@@ -59,7 +59,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 			vars.Log.Error(err)
 
 			w.Header().
-				Set("Access-Control-Allow-Origin", "http://catalog.cc")
+				Set("Access-Control-Allow-Origin", "https://catalog.cc")
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("400 Bad Request"))
 			return
@@ -84,7 +84,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 						response, _ := json.Marshal(responseJSON)
 
 						w.Header().
-							Set("Access-Control-Allow-Origin", "http://catalog.cc")
+							Set("Access-Control-Allow-Origin", "https://catalog.cc")
 						w.WriteHeader(http.StatusOK)
 						w.Write(response)
 						return
@@ -96,13 +96,13 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 						response, _ := json.Marshal(responseJSON)
 
 						w.Header().
-							Set("Access-Control-Allow-Origin", "http://catalog.cc")
+							Set("Access-Control-Allow-Origin", "https://catalog.cc")
 						w.WriteHeader(http.StatusOK)
 						w.Write(response)
 						return
 					}
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -114,7 +114,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://catalog.cc")
 				w.Header().
 					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -135,7 +135,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -152,7 +152,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://catalog.cc")
 				w.Header().
 					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -167,7 +167,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -179,7 +179,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://catalog.cc")
 				w.Header().
 					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -197,7 +197,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -214,7 +214,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://catalog.cc")
 				w.Header().
 					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -229,7 +229,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -239,7 +239,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -256,7 +256,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 					tx.Rollback()
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -267,7 +267,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 					tx.Rollback()
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -278,7 +278,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 					tx.Rollback()
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -287,7 +287,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err = tx.Commit(); err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -302,7 +302,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 				w.Header().
 					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -336,7 +336,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						vars.Log.Error(err)
 						w.Header().
-							Set("Access-Control-Allow-Origin", "http://catalog.cc")
+							Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 						w.WriteHeader(http.StatusInternalServerError)
 						w.Write([]byte("500 Internal Server Error"))
 						return
@@ -354,7 +354,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						vars.Log.Error(err)
 						w.Header().
-							Set("Access-Control-Allow-Origin", "http://catalog.cc")
+							Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 						w.WriteHeader(http.StatusInternalServerError)
 						w.Write([]byte("500 Internal Server Error"))
 						return
@@ -372,7 +372,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				response, _ := json.Marshal(responseJSON)
 
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://dashboard.catalog.cc")
 				w.Header().
 					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -383,7 +383,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if jwt.Payload.Exp.Sub(time.Now()).Seconds() >= 30 {
 					vars.Log.Debug("big expiration: ", jwt.Payload.Exp.Sub(time.Now()).Seconds())
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -395,7 +395,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -411,7 +411,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				vars.Log.Debug("new jwt is set")
 
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://catalog.cc")
 				w.Header().
 					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -422,7 +422,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if rjwt.Payload.Exp.Sub(time.Now()).Seconds() >= 30 {
 					vars.Log.Debug("big expiration: ", rjwt.Payload.Exp.Sub(time.Now()).Seconds())
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -449,7 +449,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -458,7 +458,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					vars.Log.Error(err)
 					w.Header().
-						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						Set("Access-Control-Allow-Origin", "https://catalog.cc")
 					w.WriteHeader(http.StatusInternalServerError)
 					w.Write([]byte("500 Internal Server Error"))
 					return
@@ -475,7 +475,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 				vars.Log.Debug("new rjwt and jwt is set")
 
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://catalog.cc")
 				w.Header().
 					Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -483,7 +483,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 			default:
 				vars.Log.Debug("default")
 				w.Header().
-					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					Set("Access-Control-Allow-Origin", "https://catalog.cc")
 				w.WriteHeader(http.StatusBadRequest)
 				w.Write([]byte("400 Bad Request"))
 			}
@@ -492,7 +492,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 		vars.Log.Debug("body is empty")
 
 		w.Header().
-			Set("Access-Control-Allow-Origin", "http://catalog.cc")
+			Set("Access-Control-Allow-Origin", "https://catalog.cc")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 Bad Request"))
 	}

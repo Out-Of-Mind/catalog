@@ -8,6 +8,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 	"database/sql"
 	_ "github.com/lib/pq"
 )
@@ -50,11 +51,15 @@ func inviteHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = vars.DB.ExecContext(txCtx, "INSERT INTO groups_users(user_id, group_id) VALUES($1, $2)",  userIdInt, groupId)
 	if err != nil {
-		tx.Rollback()
-		vars.Log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 Internal Server Error"))
-		return
+		if strings.Contains(err.Error(), "pk_group_user") {
+
+		} else {
+			tx.Rollback()
+			vars.Log.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 Internal Server Error"))
+			return
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
