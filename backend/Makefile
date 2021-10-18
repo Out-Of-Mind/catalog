@@ -10,4 +10,14 @@ run:
 migrate:
 	cd app && go build -o ../migration migration.go && cd .. && ./migration
 
+.PHONY: fmt
+fmt:
+	gofmt -l -s -w .
+
+.PHONY: all
+all:
+	build
+	migrate
+	./catalog-server
+
 .DEFAULT_GOAL: build
