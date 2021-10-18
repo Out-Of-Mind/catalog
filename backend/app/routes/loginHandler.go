@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	_ "github.com/lib/pq"
 )
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -83,6 +84,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 				showHTML(w, "login.html", data)
 				return
+			}
+
+			c, err := r.Cookie("session_token")
+			if err == nil {
+				vars.Cache.Del(vars.CTX, c.Value)
 			}
 
 			sessionToken := uuid.NewV4().String()

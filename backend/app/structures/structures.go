@@ -5,6 +5,7 @@ import (
 )
 
 type RequestDataJSON struct {
+	GroupName string `json:"group_name"`
 	CategoryName string `json:"category_name"`
 	ItemName     string `json:"item_name"`
 	JWT          string `json:"jwt"`
@@ -20,6 +21,9 @@ type RequestJSON struct {
 type ResponseDataJSON struct {
 	JWT  string `json:"jwt"`
 	RJWT string `json:"rjwt"`
+
+	InviteLink string `json:"invite_link"`
+	SelectLink string `json:"select_link"`
 
 	Error string `json:"error"`
 }
@@ -77,4 +81,20 @@ type JWTPayload struct {
 
 type JWTSignature struct {
 	Hash string
+}
+
+type DashboardData struct {
+	JWT, RJWT, UserName string
+	Groups []DashboardGroup
+	OwnedGroups []DashboardOwnedGroup
+}
+
+type DashboardGroup struct {
+	GroupName string
+	GroupWelcomeLink string
+}
+
+type DashboardOwnedGroup struct {
+	GroupName string
+	GroupWelcomeLink string
 }

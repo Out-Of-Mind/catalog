@@ -6,10 +6,13 @@ import (
 
 	"encoding/json"
 	"html"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+	"database/sql"
+	_ "github.com/lib/pq"
 )
 
 func apiHandler(w http.ResponseWriter, r *http.Request) {
@@ -206,6 +209,164 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 					data.Error = "Нет такой категории!"
 					responseJSON.Succes = false
 					responseJSON.Data = data
+				}
+
+				response, _ := json.Marshal(responseJSON)
+
+				w.Header().
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+				w.Header().
+					Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				w.Write(response)
+			case "add_group":
+				vars.Log.Println("add_group")
+
+				groupName, _ := unescapeUrl(requestJSON.Data.GroupName)
+				groupName = html.EscapeString(groupName)
+
+				inviteLink, err := randomLink()
+				if err != nil {
+					vars.Log.Error(err)
+					w.Header().
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte("500 Internal Server Error"))
+					return
+				}
+
+				selectLink, err := randomLink()
+				if err != nil {
+					vars.Log.Error(err)
+					w.Header().
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte("500 Internal Server Error"))
+					return
+				}
+
+				txCtx := context.Background()
+
+				tx, err := vars.DB.BeginTx(txCtx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+
+				var groupId int
+
+				err = vars.DB.QueryRowContext(txCtx, "INSERT INTO groups(group_name, invite_link, select_link) VALUES($1, $2, $3) RETURNING group_id", groupName, inviteLink, selectLink).Scan(&groupId)
+				if err != nil {
+					tx.Rollback()
+					vars.Log.Error(err)
+					w.Header().
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte("500 Internal Server Error"))
+					return
+				}
+
+				_, err = vars.DB.ExecContext(txCtx, "INSERT INTO groups_users(user_id, group_id) VALUES($1, $2)", jwt.Payload.Value, groupId)
+				if err != nil {
+					tx.Rollback()
+					vars.Log.Error(err)
+					w.Header().
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte("500 Internal Server Error"))
+					return
+				}
+
+				_, err = vars.DB.ExecContext(txCtx, "INSERT INTO owned_groups(user_id, group_id) VALUES($1, $2)", jwt.Payload.Value, groupId)
+				if err != nil {
+					tx.Rollback()
+					vars.Log.Error(err)
+					w.Header().
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte("500 Internal Server Error"))
+					return
+				}
+
+				if err = tx.Commit(); err != nil {
+					vars.Log.Error(err)
+					w.Header().
+						Set("Access-Control-Allow-Origin", "http://catalog.cc")
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte("500 Internal Server Error"))
+					return
+				}
+
+				data.InviteLink = inviteLink
+				data.SelectLink = selectLink
+
+				responseJSON.Succes = true
+				responseJSON.Data = data
+
+				response, _ := json.Marshal(responseJSON)
+
+				w.Header().
+					Set("Access-Control-Allow-Origin", "http://catalog.cc")
+				w.Header().
+					Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				w.Write(response)
+			case "delete_group":
+				vars.Log.Println("add_group")
+
+				groupName, _ := unescapeUrl(requestJSON.Data.GroupName)
+				groupName = html.EscapeString(groupName)
+
+				responseJSON.Succes = true
+				responseJSON.Data = data
+
+				delete := true
+				_, err = vars.DB.Exec("SELECT * FROM owned_groups WHERE user_id=$1 AND group_id=(SELECT group_id FROM groups WHERE group_name=$2)", jwt.Payload.Value, groupName)
+				if err != nil {
+					if err == sql.ErrNoRows {
+						delete = false
+					}
+				}
+
+				_, err = vars.DB.Exec("SELECT * FROM groups_users WHERE user_id=$1 AND group_id=(SELECT group_id FROM groups WHERE group_name=$2)", jwt.Payload.Value, groupName)
+				if err != nil {
+					if err == sql.ErrNoRows {
+						delete = false
+					}
+				}
+
+				if delete {
+					result, err := vars.DB.Exec("DELETE FROM groups WHERE group_name=$1", groupName)
+					if err != nil {
+						vars.Log.Error(err)
+						w.Header().
+							Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						w.WriteHeader(http.StatusInternalServerError)
+						w.Write([]byte("500 Internal Server Error"))
+						return
+					}
+
+					rows, err := result.RowsAffected()
+					if err != nil || rows == 0 {
+						vars.Log.Error(err)
+						data.Error = "Нет группы с таким именем!"
+						responseJSON.Succes = false
+						responseJSON.Data = data
+					}
+				} else {
+					result, err := vars.DB.Exec("DELETE FROM groups_users WHERE group_id=(SELECT group_id FROM groups WHERE group_name=$1)", groupName)
+					if err != nil {
+						vars.Log.Error(err)
+						w.Header().
+							Set("Access-Control-Allow-Origin", "http://catalog.cc")
+						w.WriteHeader(http.StatusInternalServerError)
+						w.Write([]byte("500 Internal Server Error"))
+						return
+					}
+
+					rows, err := result.RowsAffected()
+					if err != nil || rows == 0 {
+						vars.Log.Error(err)
+						data.Error = "Нет группы с таким именем!"
+						responseJSON.Succes = false
+						responseJSON.Data = data
+					}
 				}
 
 				response, _ := json.Marshal(responseJSON)

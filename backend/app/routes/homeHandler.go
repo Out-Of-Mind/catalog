@@ -55,6 +55,20 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var groupId int
+
+	err = vars.DB.QueryRow("SELECT users.group_id FROM users WHERE users.user_id=$1", userIdInt).Scan(&groupId)
+	if err != nil {
+		if strings.Contains(err.Error(), "sql: Scan error on column index 0,") {
+			http.Redirect(w, r, "http://dashboard.catalog.cc/", http.StatusTemporaryRedirect)
+			return
+		}
+		vars.Log.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 Internal Server Error"))
+		return
+	}
+
 	rows, err := vars.DB.Query("SELECT categories.category_name, categories.category_id FROM categories, users WHERE users.user_id=$1 AND categories.group_id=users.group_id", userIdInt)
 	if err != nil {
 		vars.Log.Error(err)

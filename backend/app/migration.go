@@ -28,11 +28,15 @@ func main() {
 
 	execSql("DROP TABLE IF EXISTS items")
 	execSql("DROP TABLE IF EXISTS categories")
+	execSql("DROP TABLE IF EXISTS groups_users")
+	execSql("DROP TABLE IF EXISTS owned_groups")
 	execSql("DROP TABLE IF EXISTS users")
 	execSql("DROP TABLE IF EXISTS groups")
 
-	execSql("CREATE TABLE groups(group_id INT GENERATED ALWAYS AS IDENTITY, group_name VARCHAR(255) NOT NULL, UNIQUE(group_name), PRIMARY KEY(group_id))")
-	execSql("CREATE TABLE users(user_id INT GENERATED ALWAYS AS IDENTITY, user_name VARCHAR(255) NOT NULL, email TEXT NOT NULL, password TEXT NOT NULL, group_id INT, PRIMARY KEY(user_id), UNIQUE(user_name), CONSTRAINT fk_group FOREIGN KEY(group_id) REFERENCES groups(group_id) ON DELETE SET NULL)")
+	execSql("CREATE TABLE groups(group_id INT GENERATED ALWAYS AS IDENTITY, group_name VARCHAR(255) NOT NULL, invite_link VARCHAR(32) NOT NULL, UNIQUE(invite_link), select_link VARCHAR(32) NOT NULL, UNIQUE(select_link), UNIQUE(group_name), PRIMARY KEY(group_id))")
+	execSql("CREATE TABLE users(user_id INT GENERATED ALWAYS AS IDENTITY, user_name VARCHAR(255) NOT NULL, email TEXT NOT NULL, password TEXT NOT NULL, group_id INT,  PRIMARY KEY(user_id), UNIQUE(user_name), CONSTRAINT fk_group FOREIGN KEY(group_id) REFERENCES groups(group_id) ON DELETE SET NULL)")
+	execSql("CREATE TABLE groups_users(user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE, group_id INT NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE, CONSTRAINT pk_group_user PRIMARY KEY (user_id, group_id))")
+	execSql("CREATE TABLE owned_groups(user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE, group_id INT NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE, CONSTRAINT pk_owned_group PRIMARY KEY (user_id, group_id))")
 	execSql("CREATE TABLE categories(category_id INT GENERATED ALWAYS AS IDENTITY, category_name TEXT NOT NULL, group_id INT NOT NULL, PRIMARY KEY(category_id), UNIQUE(category_name), CONSTRAINT fk_group FOREIGN KEY(group_id) REFERENCES groups(group_id) ON DELETE CASCADE)")
 	execSql("CREATE TABLE items(item_id INT GENERATED ALWAYS AS IDENTITY, item_name TEXT NOT NULL, category_id INT NOT NULL, UNIQUE(item_name), PRIMARY KEY(item_id), CONSTRAINT fk_category FOREIGN KEY(category_id) REFERENCES categories(category_id) ON DELETE CASCADE)")
 

@@ -43,6 +43,8 @@ func main() {
 
 	r.HandleFunc("/", routes.HomeHandler)
 	r.HandleFunc("/dashboard", routes.DashboardHandler)
+	r.HandleFunc("/select/{id}", routes.SelectHandler)
+	r.HandleFunc("/invite/{id}", routes.InviteHandler)
 	r.HandleFunc("/login", routes.LoginHandler)
 	r.HandleFunc("/register", routes.RegisterHandler)
 	r.HandleFunc("/logout", routes.LogoutHandler)

@@ -5,6 +5,7 @@ import (
 	vars "github.com/out-of-mind/catalog/variables"
 
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
@@ -13,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"math/big"
 	"time"
 	"unicode"
 )
@@ -140,4 +142,21 @@ func newJWT(jwt structures.JWT) (string, error) {
 	JWT := message + "." + signatureStr
 
 	return JWT, nil
+}
+
+
+func randomLink() (string, error) {
+	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	link := make([]string, 32)
+	charsArr := strings.Split(chars, "")
+
+	for i := 0; i < 32; i++ {
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(32)))
+		if err != nil {
+			return "", err
+		}
+		link[i] = charsArr[n.Int64()]
+	}
+
+	return strings.Join(link[:], ""), nil
 }

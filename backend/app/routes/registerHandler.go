@@ -141,6 +141,11 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		c, err := r.Cookie("session_token")
+		if err == nil {
+			vars.Cache.Del(vars.CTX, c.Value)
+		}
+
 		sessionToken := uuid.NewV4().String()
 
 		_, err = vars.Cache.Set(vars.CTX, sessionToken, strconv.Itoa(userId), 720*time.Hour).Result()
